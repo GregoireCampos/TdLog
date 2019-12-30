@@ -252,22 +252,22 @@ where_should_you_go_this_week(dataset)
 """ Tracer l'évolution du cash final en fonction du seuil choisi """
 
 """ Tracer l'évolution du current cash en fonction du temps """ 
-plt.plot(dataset["CC"].keys(), dataset["CC"].values(), label = "20")
+plt.plot(list(dataset["CC"].keys()),list(dataset["CC"].values()), label = "20")
 
 """ Tracer l'évolution du current cash en fonction du temps et du seuil choisi """
 
 seuil = -100
 add_data_cc(dataset, seuil)
-plt.plot(dataset["CC"].keys(), dataset["CC"].values(), label = "-50")
+plt.plot(list(dataset["CC"].keys()),list(dataset["CC"].values()), label = "-50")
 seuil = 30
 add_data_cc(dataset, seuil)
-plt.plot(dataset["CC"].keys(), dataset["CC"].values(), label = "30")
+plt.plot(list(dataset["CC"].keys()),list(dataset["CC"].values()), label = "30")
 seuil = 15
 add_data_cc(dataset, seuil)
-plt.plot(dataset["CC"].keys(), dataset["CC"].values(), label = "15")
+plt.plot(list(dataset["CC"].keys()),list(dataset["CC"].values()), label = "15")
 seuil = 0
 add_data_cc(dataset, seuil)
-plt.plot(dataset["CC"].keys(), dataset["CC"].values(), label = "0")
+plt.plot(list(dataset["CC"].keys()), list(dataset["CC"].values()), label = "0")
 plt.legend()
 plt.xlabel("Nombres de matchs joués")
 plt.ylabel("Current cash")
