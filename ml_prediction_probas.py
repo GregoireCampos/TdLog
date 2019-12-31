@@ -21,20 +21,46 @@ from sklearn.metrics import accuracy_score
 from sklearn import datasets 
 from sklearn.metrics import confusion_matrix 
 from sklearn.model_selection import train_test_split 
+import math
 
 df =pd.read_csv('training_file.csv', sep=';')
-#sep = "," fot F1_processed or sep = ";" for training_file
-df_dict = df.to_dict()
-keys_to_keep = ["FTR","B365H","B365D","B365A","HTGDBG","ATGDBG","HTPBG","ATPBG"]
-#I only keep "before-game data" except FTR which I will use to train my classification algorithm
-dataset = {}
-for key in keys_to_keep : 
-    dataset[key] = df_dict[key]
-dataset_df = pd.DataFrame.from_dict(dataset)
-df_dict = dataset_df.T.to_dict()
 
-X=[list(df_dict[i].values())[1:] for i in df_dict.keys()]
-Y = [list(df_dict[i].values())[0] for i in df_dict.keys()]
+## Creating a training files from seasons 07-08 to 18-19
+keys_to_keep = ["FTR","B365H","B365D","B365A","HTGDBG","ATGDBG","HTPBG","ATPBG"]
+X =[]
+Y = []
+for k in range(7,19) :
+    file_name = str(k)+"-"+str(k+1)+"_processed.csv"
+    df=pd.read_csv('Training_Files/France/'+file_name, sep=',')
+    #sep = "," fot F1_processed or sep = ";" for training_file
+    #I only keep "before-game data" except FTR which I will use to train my classification algorithm
+    dataset = {}
+    df_dict = df.to_dict()
+    print(file_name)
+    for key in keys_to_keep : 
+        dataset[key] = df_dict[key]
+    dataset_df = pd.DataFrame.from_dict(dataset)
+    df_dict = dataset_df.T.to_dict()
+    X+=[list(df_dict[i].values())[1:] for i in df_dict.keys()]
+    Y+=[list(df_dict[i].values())[0] for i in df_dict.keys()]
+
+#check for NaN values
+flag = 0
+X_copy=[]
+Y_copy=[]
+for i in range(len(X)) :
+    for k in range(len(X[i])):
+        if math.isnan(X[i][k]):
+            flag = 1
+    if flag ==0 :
+        X_copy+=[X[i]]
+        Y_copy+=[Y[i]]
+    else :
+        print("Incorrect data : " + str(i))
+    flag = 0
+X = X_copy
+Y=Y_copy
+
 for i in range(len(Y)) : 
     if Y[i]=="H" : 
         Y[i]=0
@@ -43,6 +69,7 @@ for i in range(len(Y)) :
     else :
         Y[i]=2
         
+
 training_X = X[:int(len(X)-len(X)/5)]
 testing_X = X[int(len(X)-len(X)/5):]
 
@@ -76,33 +103,33 @@ print("-----------------")
 
 
 #training a linear SVM classifier 
-from sklearn.svm import SVC 
-svm_model_linear = SVC(kernel = 'linear', C = 1, probability = True).fit(training_X, training_Y) 
-svm_predictions = svm_model_linear.predict_proba(testing_X) 
+#from sklearn.svm import SVC 
+#svm_model_linear = SVC(kernel = 'linear', C = 1, probability = True).fit(training_X, training_Y) 
+#svm_predictions = svm_model_linear.predict_proba(testing_X) 
 
-accepted_games = []
-accepted_Y = []
-accepted_odd =[]
+#accepted_games = []
+#accepted_Y = []
+#accepted_odd =[]
 
-for k in range (len(svm_predictions)) : 
-    for i in range(len(svm_predictions[k])) : 
-        if svm_predictions[k][i]>threshold : 
-            accepted_games+=[i]
-            accepted_Y+=[testing_Y[k]]
-            accepted_odd+=[testing_X[k][i]]
+#for k in range (len(svm_predictions)) : 
+#    for i in range(len(svm_predictions[k])) : 
+#        if svm_predictions[k][i]>threshold : 
+#            accepted_games+=[i]
+#            accepted_Y+=[testing_Y[k]]
+#            accepted_odd+=[testing_X[k][i]]
 #model accuracy for X_test   
-accuracy = svm_model_linear.score(testing_X, testing_Y) 
+#accuracy = svm_model_linear.score(testing_X, testing_Y) 
 
 # creating a confusion matrix 
-cm = confusion_matrix(accepted_Y, accepted_games)
-true_class = cm[0][0]+cm[1][1]+cm[2][2]
-print(" SVM correct answers (%): ")
-print(true_class/len(accepted_Y))
-print("cote moyenne")
-print(sum(accepted_odd)/len(accepted_odd))
-print("Gain moyenpar match pour 20E par mise  : ")
-print((true_class/len(accepted_Y))*(sum(accepted_odd)/len(accepted_odd))*20-20)
-print("-----------------")
+#cm = confusion_matrix(accepted_Y, accepted_games)
+#true_class = cm[0][0]+cm[1][1]+cm[2][2]
+#print(" SVM correct answers (%): ")
+#print(true_class/len(accepted_Y))
+#print("cote moyenne")
+#print(sum(accepted_odd)/len(accepted_odd))
+#print("Gain moyenpar match pour 20E par mise  : ")
+#print((true_class/len(accepted_Y))*(sum(accepted_odd)/len(accepted_odd))*20-20)
+#print("-----------------")
 
 # training a KNN classifier 
 from sklearn.neighbors import KNeighborsClassifier 

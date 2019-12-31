@@ -10,48 +10,52 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-df = pd.read_csv("F1.csv")
-df_dict = df.to_dict()
-keys_to_keep = ["Date","HomeTeam","AwayTeam","FTHG","FTAG","FTR","B365H","B365D","B365A"]
-dataset = {}
-for key in keys_to_keep : 
-    dataset[key] = df_dict[key]
+
+def prepare_file_to_processing(file_path) :
+    df = pd.read_csv(file_path+".csv")
+    df_dict = df.to_dict()
+    keys_to_keep = ["Date","HomeTeam","AwayTeam","FTHG","FTAG","FTR","B365H","B365D","B365A"]
+    dataset = {}
+    for key in keys_to_keep : 
+        dataset[key] = df_dict[key]
     
 # Initialise toutes les différences de but à 0
     
-dataset["HTGDBG"]= {}
-#home team goal average before game 
-dataset["HTGDAG"]= {}
-dataset["ATGDBG"]= {}
-dataset["ATGDAG"]= {}
-for i in dataset['Date'].keys() : 
-    dataset["HTGDBG"][i] = -200
-    dataset["HTGDAG"][i] = -200
-    dataset["ATGDBG"][i] = -200
-    dataset["ATGDAG"][i] = -200
+    dataset["HTGDBG"]= {}
+    #home team goal average before game 
+    dataset["HTGDAG"]= {}
+    dataset["ATGDBG"]= {}
+    dataset["ATGDAG"]= {}
+    for i in dataset['Date'].keys() : 
+        dataset["HTGDBG"][i] = 0
+        dataset["HTGDAG"][i] = 0
+        dataset["ATGDBG"][i] = 0
+        dataset["ATGDAG"][i] = 0
     
 
-# Initialise tous les points à 0
-dataset["HTPBG"]= {}
-dataset["HTPAG"]= {}
-dataset["ATPBG"]= {}
-dataset["ATPAG"]= {}
-dataset["RATIO"] = {}
-dataset["CC"] = {}
-dataset["GO"] = {}
-for i in dataset['Date'].keys() : 
-    dataset["HTPBG"][i] = -200
-    dataset["HTPAG"][i] = -200
-    dataset["ATPBG"][i] = -200
-    dataset["ATPAG"][i] = -200
-    dataset["RATIO"][i] = -200
-    dataset["CC"][i] = 20
-    dataset["GO"][i] = False
+    # Initialise tous les points à 0
+    dataset["HTPBG"]= {}
+    dataset["HTPAG"]= {}
+    dataset["ATPBG"]= {}
+    dataset["ATPAG"]= {}
+    dataset["RATIO"] = {}
+    dataset["CC"] = {}
+    dataset["GO"] = {}
+    for i in dataset['Date'].keys() : 
+        dataset["HTPBG"][i] = 0
+        dataset["HTPAG"][i] = 0
+        dataset["ATPBG"][i] = 0
+        dataset["ATPAG"][i] = 0
+        dataset["RATIO"][i] = 0
+        dataset["CC"][i] = 20
+        dataset["GO"][i] = False
 # on initialise à -200 pour qu'on puisse savoir si les données ont été complétées
     
 #Je me prépare a mettre les différences de but avant et après match, les points avant et après match que j'initialise à 0
-dataset_df = pd.DataFrame.from_dict(dataset) # à quoi ça sert ? : il remet sous forme de tableau
-dataset_df.to_csv("F1_processed.csv")
+    dataset_df = pd.DataFrame.from_dict(dataset) # à quoi ça sert ? : il remet sous forme de tableau
+    dataset_df.to_csv(file_path+"_processed.csv")
+    return(dataset)
+    
 
 #Fonction pour ajouter les différences de buts avant et apres match des équipes à domicile et à l'exterieur pour chaque match
 #Prend en argument le dataset créé en haut de fichier et le nom de l'équipe à traiter (je traite les équipes une par une)
@@ -60,7 +64,7 @@ dataset_df.to_csv("F1_processed.csv")
 list_teams= ["Marseille", "Toulouse","Monaco","Lille","Rennes","Nimes","Reims","Lyon","Caen","Guingamp","Strasbourg","Paris SG"
              ,"Montpellier","Amiens","Dijon","Nantes","St Etienne","Angers","Nice","Bordeaux"]
 
-def add_data_goal_diff(dataset,team) :
+def add_data_goal_diff(dataset,team,file_path) :
     #Home team goal difference before and after the game = différence de buts de l'équipe à domicile avant et après le match
     nb_games = len(dataset['Date'].keys())
     last_game_index = None;
@@ -96,17 +100,14 @@ def add_data_goal_diff(dataset,team) :
                         dataset["ATGDAG"][i] = dataset["ATGDAG"][last_game_index] + dataset["FTAG"][i] - dataset["FTHG"][i]
             last_game_index = i
     dataset_df = pd.DataFrame.from_dict(dataset)
-    dataset_df.to_csv("F1_processed.csv")
+    dataset_df.to_csv(file_path)
 
     
-#la je lance cette fonction pour remplir toute les différences de buts
-    
-for team in list_teams : 
-    add_data_goal_diff(dataset,team)
+
     
 # Même process pour ajouter les points
     
-def add_data_points(dataset,team) :
+def add_data_points(dataset,team,file_path) :
     #Home team goal difference before and after the game = différence de buts de l'équipe à domicile avant et après le match
     nb_games = len(dataset['Date'].keys())
     last_game_index = None;
@@ -171,10 +172,17 @@ def add_data_points(dataset,team) :
                             dataset["ATPAG"][i] = dataset["ATPBG"][i]
             last_game_index = i
     dataset_df = pd.DataFrame.from_dict(dataset)
-    dataset_df.to_csv("F1_processed.csv")
+    dataset_df.to_csv(file_path)
+    
 
-for team in list_teams : 
-    add_data_points(dataset,team)
+#la je lance cette fonction pour remplir toute les différences de buts
+    
+def process_file(dataset,file_path) :
+    for team in list_teams : 
+        add_data_goal_diff(dataset,team,file_path)
+
+    for team in list_teams : 
+        add_data_points(dataset,team,file_path)
     
 mise = 20
 # On considère que sur tous les matchs pariés, on a mis 20 euros
@@ -195,7 +203,7 @@ def add_data_ratio(dataset):
             dataset["RATIO"][i] = a * (dataset["HTGDBG"][i] - dataset["ATGDBG"][i]) + b * (dataset["HTPBG"][i] - dataset["ATPBG"][i])
     dataset_df = pd.DataFrame.from_dict(dataset)
     dataset_df.to_csv("F1_processed.csv")
-add_data_ratio(dataset)
+#add_data_ratio(dataset)
 
 
 """Maintenant, on aimerait remplir la colonne "CC" (current cash) qui bouge quand on prend un pari, et la colonne GO qui affiche True
@@ -218,11 +226,11 @@ def add_data_cc(dataset, seuil_choisi):
     dataset_df = pd.DataFrame.from_dict(dataset)
     dataset_df.to_csv("F1_processed.csv")
 
-add_data_cc(dataset, seuil)
-nb_games = len(dataset['Date'].keys())
-final_cash = dataset["CC"][nb_games-1]
+#add_data_cc(dataset, seuil)
+#nb_games = len(dataset['Date'].keys())
+#final_cash = dataset["CC"][nb_games-1]
 
-date = "03/03/2019"
+#date = "03/03/2019"
 
 """Maintenant, on demande au programme de nous donner les matchs à parier de la semaine"""
 def where_should_you_go_this_week(dataset):
@@ -243,24 +251,24 @@ def where_should_you_go_this_week(dataset):
         i = i+1
     print(Week_matches)
     
-where_should_you_go_this_week(dataset)
+#where_should_you_go_this_week(dataset)
 
 """ Tracer l'évolution du cash final en fonction du seuil choisi """
 """ Tracer l'évolution du current cash en fonction du temps """ 
-plt.plot(list(dataset["CC"].keys()), list(dataset["CC"].values()), label = "20")
+#plt.plot(list(dataset["CC"].keys()), list(dataset["CC"].values()), label = "20")
 
 """ Tracer l'évolution du current cash en fonction du temps et du seuil choisi """
 
-seuil = 15
-add_data_cc(dataset, seuil)
-plt.plot(list(dataset["CC"].keys()), list(dataset["CC"].values()), label = "15")
-seuil = 30
-add_data_cc(dataset, seuil)
-plt.plot(list(dataset["CC"].keys()), list(dataset["CC"].values()), label = "30")
-plt.legend()
-plt.xlabel("Nombres de matchs joués")
-plt.ylabel("Current cash")
-plt.show()
+#seuil = 15
+#add_data_cc(dataset, seuil)
+#plt.plot(list(dataset["CC"].keys()), list(dataset["CC"].values()), label = "15")
+#seuil = 30
+#add_data_cc(dataset, seuil)
+#plt.plot(list(dataset["CC"].keys()), list(dataset["CC"].values()), label = "30")
+#plt.legend()
+#plt.xlabel("Nombres de matchs joués")
+#plt.ylabel("Current cash")
+#plt.show()
 
 """ Calcul de la rentabilité : regarder combien de paris on a pris et regarder le gain """
 
@@ -275,7 +283,7 @@ def calcul_renta(dataset, seuil):
     add_data_cc(dataset, seuil)
     return (dataset["CC"][nb_games - 1] / mise_totale)
 
-print(calcul_renta(dataset, 15))
+#print(calcul_renta(dataset, 15))
 # Quand on pose un seuil de 15 avec a = 0.25 et b = 0.75, on a une rentabilité de 8.6 % : mise totale de 940 euros et gain de 80.4 euros
 # Quand on pose un seuil de 15 avec a = 0.45 et b = 0.55, on a une rentabilité de 10.8 %
 
