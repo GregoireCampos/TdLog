@@ -28,14 +28,18 @@ from sklearn.model_selection import train_test_split
 import math
 import sys
 
-df =pd.read_csv('training_file.csv', sep=';')
+df =pd.read_csv('training_file.csv', sep=';')         
 
 ## Creating a training files from seasons 07-08 to 18-19
 keys_to_keep = ["FTR","B365H","B365D","B365A","HTGDBG","ATGDBG","HTPBG","ATPBG"]
 X =[]
 Y = []
+file_name_total = ""
+
 for k in range(7,19) :
     file_name = str(k)+"-"+str(k+1)+"_processed.csv"
+    file_name_total = file_name_total+"""
+    """+file_name
     df=pd.read_csv('Training_Files/France/'+file_name, sep=',')
     #sep = "," fot F1_processed or sep = ";" for training_file
     #I only keep "before-game data" except FTR which I will use to train my classification algorithm
@@ -96,8 +100,8 @@ for k in range (len(dtree_predictions)) :
             accepted_Y_decision_tree+=[testing_Y[k]]
             accepted_odd_decision_tree+=[testing_X[k][i]]
 #creating a confusion matrix 
-cm = confusion_matrix(accepted_Y_decision_tree, accepted_games_decision_tree) 
-true_class_decision_tree = cm[0][0]+cm[1][1]+cm[2][2]
+cm_decision_tree = confusion_matrix(accepted_Y_decision_tree, accepted_games_decision_tree) 
+true_class_decision_tree = cm_decision_tree[0][0]+cm_decision_tree[1][1]+cm_decision_tree[2][2]
 """
 print("Decision tree correct answers (%): ")
 print(true_class/len(accepted_Y))
@@ -155,8 +159,8 @@ for k in range (len(knn_predictions)) :
             accepted_games_knn+=[i]
             accepted_Y_knn+=[testing_Y[k]]
             accepted_odd_knn+=[testing_X[k][i]] 
-cm = confusion_matrix(accepted_Y_knn, accepted_games_knn) 
-true_class_knn = cm[0][0]+cm[1][1]+cm[2][2]
+cm_knn = confusion_matrix(accepted_Y_knn, accepted_games_knn) 
+true_class_knn = cm_knn[0][0]+cm_knn[1][1]+cm_knn[2][2]
 """
 print("KNN correct answers (%): ")
 print(true_class/len(accepted_Y))
@@ -184,8 +188,8 @@ for k in range (len(gnb_predictions)) :
             accepted_odd_bayes+=[testing_X[k][i]] 
   
 # creating a confusion matrix 
-cm = confusion_matrix(accepted_Y_bayes, accepted_games_bayes) 
-true_class_bayes = cm[0][0]+cm[1][1]+cm[2][2]
+cm_bayes = confusion_matrix(accepted_Y_bayes, accepted_games_bayes) 
+true_class_bayes = cm_bayes[0][0]+cm_bayes[1][1]+cm_bayes[2][2]
 """
 print("Bayes correct answers (%): ")
 print(true_class/len(accepted_Y))
@@ -202,29 +206,134 @@ print("-----------------")
 #button.setIconSize(QtCore.QSize(30,30))
 
 class Window(QMainWindow):
-    
+
     def __init__(self):
         super(Window, self).__init__()
-        self.setGeometry(50,50,500,300)
+        self.setGeometry(50,50,800,800)
         self.setWindowTitle("TdLog")
         self.home()
+        self.flag = 0
 
     def home(self):
-        btn = QPushButton("KNN method", self)
-        btn.clicked.connect(self.knnmethod)
-        btn.resize(100,100)
-        btn.move(100,100)
+        btn_0 = QPushButton("Process data", self)
+        btn_0.clicked.connect(self.processed_data)
+        btn_0.resize(100,100)
+        btn_0.move(0,450)
+        btn_0.adjustSize()
+        self.label_0 = QLabel(self)
+        self.label_0.setText("please process the data")
+        self.label_0.move(0,500)
+        self.label_0.adjustSize()
+        btn_1 = QPushButton("KNN method", self)
+        btn_1.clicked.connect(self.knnmethod)
+        btn_1.resize(100,100)
+        btn_1.move(250,350)
+        btn_1.adjustSize()
+        self.label_1 = QLabel(self)
+        self.label_1.setText("")
+        self.label_1.move(250,400)
+        self.label_1.adjustSize()
+        btn_2 = QPushButton("Bayes", self)
+        btn_2.clicked.connect(self.bayes)
+        btn_2.resize(100,100)
+        btn_2.move(500,200)
+        btn_2.adjustSize()
+        self.label_2 = QLabel(self)
+        self.label_2.setText("")
+        self.label_2.move(500,250)
+        self.label_2.adjustSize()
+        btn_3 = QPushButton("Decision_tree", self)
+        btn_3.clicked.connect(self.decision_tree)
+        btn_3.resize(100,100)
+        btn_3.move(60,200)
+        btn_3.adjustSize()
+        self.label_3 = QLabel(self)
+        self.label_3.setText("")
+        self.label_3.move(60,250)
+        self.label_3.adjustSize()
         self.show()
         
     def knnmethod(self):
-        print("KNN correct answers (%): ")
-        print(true_class_knn/len(accepted_Y_knn))
-        print("cote moyenne")
-        print(sum(accepted_odd_knn)/len(accepted_odd_knn))
-        print("Gain moyenpar match pour 20E par mise  : ")
-        print((true_class_knn/len(accepted_Y_knn))*(sum(accepted_odd_knn)/len(accepted_odd_knn))*20-20)
-        print("-----------------")
-        sys.exit()
+        if self.flag == 1:
+            print("KNN correct answers (%): ")
+            print(true_class_knn/len(accepted_Y_knn))
+            correct_answers = true_class_knn/len(accepted_Y_knn)
+            correct_answers = round(correct_answers,4)
+            correct_answers = str(correct_answers)
+            print("cote moyenne")
+            print(sum(accepted_odd_knn)/len(accepted_odd_knn))
+            average_bet = sum(accepted_odd_knn)/len(accepted_odd_knn)
+            average_bet = round(average_bet,4)
+            average_bet = str(average_bet)
+            print("Gain moyen par match pour 20E par mise  : ")
+            print((true_class_knn/len(accepted_Y_knn))*(sum(accepted_odd_knn)/len(accepted_odd_knn))*20-20)
+            average_gain = (true_class_knn/len(accepted_Y_knn))*(sum(accepted_odd_knn)/len(accepted_odd_knn))*20-20
+            average_gain = round(average_gain,4)
+            average_gain = str(average_gain)
+            print("-----------------")
+            self.label_1.setText("KNN correct answers (%):"+correct_answers+" \ncote moyenne :"+average_bet+" \nGain moyen par match pour 20 € de mise :"+average_gain)
+            self.label_1.adjustSize()
+        else :
+            self.label_1.setText("""Please process the data before  
+            starting analyse them ...""")
+            self.label_1.adjustSize()
+
+        
+    def bayes(self):
+        if self.flag == 1:
+            print("Bayes correct answers (%): ")
+            print(true_class_bayes/len(accepted_Y_bayes))
+            correct_answers = true_class_bayes/len(accepted_Y_bayes)
+            correct_answers = round(correct_answers,4)
+            correct_answers = str(correct_answers)
+            print("cote moyenne")
+            print(sum(accepted_odd_bayes)/len(accepted_odd_bayes))
+            average_bet = sum(accepted_odd_bayes)/len(accepted_odd_bayes)
+            average_bet = round(average_bet,4)
+            average_bet = str(average_bet)
+            print("Gain moyen par match pour 20E par mise  : ")
+            print((true_class_bayes/len(accepted_Y_bayes))*(sum(accepted_odd_bayes)/len(accepted_odd_bayes))*20-20)
+            average_gain = (true_class_bayes/len(accepted_Y_bayes))*(sum(accepted_odd_bayes)/len(accepted_odd_bayes))*20-20
+            average_gain = round(average_gain,4)
+            average_gain = str(average_gain)
+            print("-----------------")
+            self.label_2.setText("Bayes correct answers (%):"+correct_answers+" \ncote moyenne :"+average_bet+" \nGain moyen par match pour 20 € de mise :"+average_gain)
+            self.label_2.adjustSize()
+        else :
+            self.label_2.setText("""Please process the data before 
+            starting analyse them ...""")
+            self.label_2.adjustSize()
+        
+    def decision_tree(self):
+        if self.flag == 1:
+            print("Bayes correct answers (%): ")
+            print(true_class_decision_tree/len(accepted_Y_decision_tree))
+            correct_answers = true_class_decision_tree/len(accepted_Y_decision_tree)
+            correct_answers = round(correct_answers,4)
+            correct_answers = str(correct_answers)
+            print("cote moyenne")
+            print(sum(accepted_odd_decision_tree)/len(accepted_odd_decision_tree))
+            average_bet = sum(accepted_odd_decision_tree)/len(accepted_odd_decision_tree)
+            average_bet = round(average_bet,4)
+            average_bet = str(average_bet)
+            print("Gain moyen par match pour 20E par mise  : ")
+            print((true_class_decision_tree/len(accepted_Y_decision_tree))*(sum(accepted_odd_decision_tree)/len(accepted_odd_decision_tree))*20-20)
+            average_gain = (true_class_decision_tree/len(accepted_Y_decision_tree))*(sum(accepted_odd_decision_tree)/len(accepted_odd_decision_tree))*20-20
+            average_gain = round(average_gain,4)
+            average_gain = str(average_gain)
+            print("-----------------")
+            self.label_3.setText("Bayes correct answers (%):"+correct_answers+" \ncote moyenne :"+average_bet+" \nGain moyen par match pour 20 € de mise :"+average_gain)
+            self.label_3.adjustSize()
+        else :
+            self.label_3.setText("""Please process the data before 
+            starting analyse them ...""")
+            self.label_3.adjustSize()
+            
+    def processed_data(self):
+        self.label_0.setText(file_name_total +"\n data successfully processed")
+        self.label_0.adjustSize()
+        self.flag = 1
+        
 
 def run():        
     app = QApplication(sys.argv)
@@ -232,3 +341,5 @@ def run():
     sys.exit(app.exec_())
     
 run()
+
+       

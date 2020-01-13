@@ -237,9 +237,9 @@ def where_should_you_go_this_week(dataset):
         Week_matches.append([dataset["HomeTeam"][i], dataset["AwayTeam"][i], dataset["GO"][i]])
         i = i+1
     print(Week_matches)
-    
-where_should_you_go_this_week(dataset)
 
+# where_should_you_go_this_week(dataset)
+# la commande ci-dessus rend les matchs des 7 prochains jours, et si oui ou non il faut parier sur l'équipe domicile
         
         
     
