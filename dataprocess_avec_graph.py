@@ -61,8 +61,10 @@ def prepare_file_to_processing(file_path) :
 #Prend en argument le dataset créé en haut de fichier et le nom de l'équipe à traiter (je traite les équipes une par une)
 #Donc il faudra lancer la fonction sur la liste suivante pour avoir le tout
 
-list_teams= ["Marseille", "Toulouse","Monaco","Lille","Rennes","Nimes","Reims","Lyon","Caen","Guingamp","Strasbourg","Paris SG"
-             ,"Montpellier","Amiens","Dijon","Nantes","St Etienne","Angers","Nice","Bordeaux"]
+list_teams= ["Marseille", "Toulouse","Monaco","Lille","Rennes","Nimes","Reims","Lyon","Caen","Guingamp","Strasbourg",
+             "Paris SG","Montpellier","Amiens","Dijon","Nantes","St Etienne","Angers","Nice","Bordeaux","Lorient",
+             "Lens","Sochaux","Nancy","Valenciennes", "Le Mans", "Metz","Auxerre","Le Havre","Grenoble","Boulogne",
+             "Arles","Brest","Ajaccio","Evian Thonon Gaillard","Bastia","Troyes","Ajaccio GFCO"]
 
 def add_data_goal_diff(dataset,team,file_path) :
     #Home team goal difference before and after the game = différence de buts de l'équipe à domicile avant et après le match
@@ -234,7 +236,7 @@ def add_data_cc(dataset, seuil_choisi):
 
 """Maintenant, on demande au programme de nous donner les matchs à parier de la semaine"""
 def where_should_you_go_this_week(dataset):
-    nb_games = len(dataset['Date'].keys())
+    nb_games = len(dataset["Date"].keys())
     i = 0
     newdate_match = time.strptime(dataset["Date"][0], "%d/%m/%Y")
     newdate_now = time.strptime(date, "%d/%m/%Y")

@@ -81,17 +81,8 @@ for i in range(len(Y)) :
 ##à changer pour s'entraîner sur des valeurs prises aléatoirement et tester sur le reste des valeurs
 
 r = random.random()
-print(r)
-print( "X =")
-print(X)
-print("Y=")
-print(Y)
 random.shuffle(X, lambda:r)
 random.shuffle(Y, lambda:r)
-print( "X shuffle =")
-print(X)
-print("Y shuffle =")
-print(Y)
 training_X = X[:int(len(X)-len(X)/5)]
 testing_X = X[int(len(X)-len(X)/5):]
 
@@ -102,7 +93,8 @@ from sklearn.tree import DecisionTreeClassifier
 dtree_model = DecisionTreeClassifier(max_depth = 10).fit(training_X, training_Y) 
 dtree_predictions = dtree_model.predict_proba(testing_X) 
 
-threshold = 0.5
+#changer le threshold pour avoir la meilleure valeur possible
+threshold = 0.9
 accepted_games_decision_tree = []
 accepted_odd_decision_tree =[]
 accepted_Y_decision_tree = [] # résultat du match 0 1 ou 2
@@ -229,7 +221,7 @@ class Window(QMainWindow):
 
     def __init__(self):
         super(Window, self).__init__()
-        self.setGeometry(50,50,800,800)
+        self.setGeometry(50,50,1000,1000)
         self.setWindowTitle("TdLog")
         self.home()
         self.flag = 0
@@ -354,6 +346,9 @@ class Window(QMainWindow):
         self.label_0.setText(file_name_total +"\n data successfully processed")
         self.label_0.adjustSize()
         self.flag = 1
+        
+    #def where_you_have_to_bet_this_week(self):
+        
         
 
 def run():        
