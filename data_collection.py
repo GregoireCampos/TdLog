@@ -31,7 +31,7 @@ def launch_driver() :
     chrome_options.add_argument(
     'user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36')
     #Change the path in the following line
-    driver = webdriver.Chrome('/Users/badr/Desktop/ranger/ponts/tdlog/tdlog2/chromedriver', options=chrome_options)
+    driver = webdriver.Chrome('./chromedriver', options=chrome_options)
     driver.get("https://www.football-data.co.uk/francem.php");
     for i in [2,4,6,8,10,12,14,16,18,20] :
         file = driver.find_element_by_xpath('/html/body/table[5]/tbody/tr[2]/td[3]/a['+str(i)+']')

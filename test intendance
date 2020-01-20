@@ -1,0 +1,25 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Jan 18 14:46:14 2020
+
+@author: badr
+"""
+
+import requests
+
+idProduit = "5e0e0de617e084669b80bd3f"
+qty = 500
+
+url = "https://api.webflow.com/collections/5e0e0de617e08464db80b8b9/items/"+idProduit+"/inventory"
+payload = """{\n\"fields\": {\n\"inventoryType\": \"finite\",\n\"updateQuantity\": \""""+str(qty)+"""\"\n}\n}"""
+headers = {
+  'accept-version': '1.0.0',
+  'Content-Type': 'application/json',
+  'Authorization': 'Bearer ba1d2d445cb0498734b986b1fd84271316a96046ea20d484d974af732a21daaf'
+}
+
+response = requests.request("PATCH", url, headers=headers, data = payload)
+
+print(response.text.encode('utf8'))
+

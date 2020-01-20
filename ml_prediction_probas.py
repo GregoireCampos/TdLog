@@ -28,6 +28,11 @@ from sklearn.model_selection import train_test_split
 import math
 import sys
 
+
+
+        
+        
+        
 df =pd.read_csv('training_file.csv', sep=';')         
 
 ## Creating a training files from seasons 07-08 to 18-19
@@ -81,17 +86,17 @@ for i in range(len(Y)) :
 ##à changer pour s'entraîner sur des valeurs prises aléatoirement et tester sur le reste des valeurs
 
 r = random.random()
-print(r)
-print( "X =")
-print(X)
-print("Y=")
-print(Y)
+#print(r)
+#print( "X =")
+#print(X)
+#print("Y=")
+#print(Y)
 random.shuffle(X, lambda:r)
 random.shuffle(Y, lambda:r)
-print( "X shuffle =")
-print(X)
-print("Y shuffle =")
-print(Y)
+#print( "X shuffle =")
+#print(X)
+#print("Y shuffle =")
+#print(Y)
 training_X = X[:int(len(X)-len(X)/5)]
 testing_X = X[int(len(X)-len(X)/5):]
 
@@ -101,6 +106,7 @@ testing_Y = Y[int(len(Y)-len(Y)/5):]
 from sklearn.tree import DecisionTreeClassifier 
 dtree_model = DecisionTreeClassifier(max_depth = 10).fit(training_X, training_Y) 
 dtree_predictions = dtree_model.predict_proba(testing_X) 
+print(testing_X[0])
 
 threshold = 0.5
 accepted_games_decision_tree = []
@@ -360,7 +366,47 @@ def run():
     app = QApplication(sys.argv)
     GUI = Window()
     sys.exit(app.exec_())
-    
-run()
 
-       
+#run()
+
+def predict_games_dtree() : 
+    df = pd.read_csv("Next_games.csv", sep=';')
+    dataset = {}
+    df_dict_origin = df.to_dict()
+    for key in keys_to_keep : 
+        dataset[key] = df_dict_origin[key]
+    dataset_df = pd.DataFrame.from_dict(dataset)
+    df_dict = dataset_df.T.to_dict()
+    X =[]
+    X+=[list(df_dict[i].values())[1:] for i in df_dict.keys()]
+    predictions = dtree_model.predict_proba(X)
+    for i in range(len(predictions)) :
+        print("%s gagne avec proba %f, Match nul avec %f, et %s gagne avec proba %f" %(df_dict_origin["HomeTeam"][i],predictions[i][0],predictions[i][1], df_dict_origin["AwayTeam"][i],predictions[i][2])) 
+        
+def predict_games_knn() : 
+    df = pd.read_csv("Next_games.csv", sep=';')
+    dataset = {}
+    df_dict_origin = df.to_dict()
+    for key in keys_to_keep : 
+        dataset[key] = df_dict_origin[key]
+    dataset_df = pd.DataFrame.from_dict(dataset)
+    df_dict = dataset_df.T.to_dict()
+    X =[]
+    X+=[list(df_dict[i].values())[1:] for i in df_dict.keys()]
+    predictions = knn.predict_proba(X)
+    for i in range(len(predictions)) :
+        print("%s gagne avec proba %f, Match nul avec %f, et %s gagne avec proba %f" %(df_dict_origin["HomeTeam"][i],predictions[i][0],predictions[i][1], df_dict_origin["AwayTeam"][i],predictions[i][2])) 
+        
+def predict_games_gnb() : 
+    df = pd.read_csv("Next_games.csv", sep=';')
+    dataset = {}
+    df_dict_origin = df.to_dict()
+    for key in keys_to_keep : 
+        dataset[key] = df_dict_origin[key]
+    dataset_df = pd.DataFrame.from_dict(dataset)
+    df_dict = dataset_df.T.to_dict()
+    X =[]
+    X+=[list(df_dict[i].values())[1:] for i in df_dict.keys()]
+    predictions = gnb.predict_proba(X)
+    for i in range(len(predictions)) :
+        print("%s gagne avec proba %f, Match nul avec %f, et %s gagne avec proba %f" %(df_dict_origin["HomeTeam"][i],predictions[i][0],predictions[i][1], df_dict_origin["AwayTeam"][i],predictions[i][2]))        
