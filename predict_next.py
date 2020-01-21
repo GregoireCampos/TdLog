@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Dec 31 12:39:49 2019
+Created on Sun Jan 19 15:46:23 2020
 
-@author: badr and gregoire
+@author: badr
 """
-
 import time
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -30,10 +29,7 @@ def launch_driver() :
     chrome_options.add_argument('--disk-cache-dir=/tmp/cache-dir')
     chrome_options.add_argument(
     'user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36')
-    #Change the path in the following line
-    driver = webdriver.Chrome('/Users/badr/Desktop/ranger/ponts/tdlog/tdlog2/chromedriver', options=chrome_options)
-    driver.get("https://www.football-data.co.uk/francem.php");
-    for i in [2,4,6,8,10,12,14,16,18,20] :
-        file = driver.find_element_by_xpath('/html/body/table[5]/tbody/tr[2]/td[3]/a['+str(i)+']')
-        file.click()
+    driver = webdriver.Chrome('/Users/badr/Downloads/Bet/chromedriver', options=chrome_options)
+    driver.get("https://www.football-data.co.uk/matches.php");
     return(driver)
+    
