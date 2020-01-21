@@ -99,14 +99,30 @@ accepted_games_decision_tree = []
 accepted_odd_decision_tree =[]
 accepted_Y_decision_tree = [] # résultat du match 0 1 ou 2
 sum_true_odd_decision_tree = 0 #somme des cotes des matchs gagnés
+number_of_won_games_decision_tree = 0
+number_of_games = 0
 for k in range (len(dtree_predictions)) : 
     for i in range(len(dtree_predictions[k])) : 
         if dtree_predictions[k][i]>threshold : 
             accepted_games_decision_tree+=[i] #prédiction
             accepted_Y_decision_tree+=[testing_Y[k]] #vrai résultat
             accepted_odd_decision_tree+=[testing_X[k][i]]
+            number_of_games += 1
             if testing_Y[k] == i:
                 sum_true_odd_decision_tree += testing_X[k][i]
+                number_of_won_games_decision_tree += 1
+                
+"""
+print("la cote moyenne des matchs gagnés pour le decision tree est :")
+cote_moyenne_gagnée = sum_true_odd_decision_tree/number_of_won_games_decision_tree
+print(sum_true_odd_decision_tree/number_of_won_games_decision_tree)
+print("le pourcentage de victoire est :")
+print(number_of_won_games_decision_tree/number_of_games)
+pourcentage_de_victoire = number_of_won_games_decision_tree/number_of_games
+print("quand on parie 20 euros, on gagne en moyenne :")
+print(20*pourcentage_de_victoire*cote_moyenne_gagnée-20)
+"""
+
 #creating a confusion matrix 
 cm_decision_tree = confusion_matrix(accepted_Y_decision_tree, accepted_games_decision_tree) 
 true_class_decision_tree = cm_decision_tree[0][0]+cm_decision_tree[1][1]+cm_decision_tree[2][2]
@@ -162,6 +178,7 @@ accepted_games_knn = []
 accepted_Y_knn = []
 accepted_odd_knn =[]
 sum_true_odd_knn = 0
+number_of_won_games_knn = 0
 for k in range (len(knn_predictions)) : 
     for i in range(len(knn_predictions[k])) : 
         if knn_predictions[k][i]>threshold : 
@@ -170,6 +187,7 @@ for k in range (len(knn_predictions)) :
             accepted_odd_knn+=[testing_X[k][i]] 
             if testing_Y[k] == i:
                 sum_true_odd_knn += testing_X[k][i]
+                number_of_won_games_knn += 1
 cm_knn = confusion_matrix(accepted_Y_knn, accepted_games_knn) 
 true_class_knn = cm_knn[0][0]+cm_knn[1][1]+cm_knn[2][2]
 """
@@ -191,6 +209,7 @@ accepted_games_bayes = []
 accepted_Y_bayes = []
 accepted_odd_bayes =[]
 sum_true_odd_bayes = 0
+number_of_won_games_bayes = 0
 for k in range (len(gnb_predictions)) : 
     for i in range(len(gnb_predictions[k])) : 
         if gnb_predictions[k][i]>threshold : 
@@ -199,6 +218,7 @@ for k in range (len(gnb_predictions)) :
             accepted_odd_bayes+=[testing_X[k][i]] 
             if testing_Y[k] == i:
                 sum_true_odd_bayes += testing_X[k][i]
+                number_of_won_games_bayes += 1
 # creating a confusion matrix 
 cm_bayes = confusion_matrix(accepted_Y_bayes, accepted_games_bayes) 
 true_class_bayes = cm_bayes[0][0]+cm_bayes[1][1]+cm_bayes[2][2]
@@ -267,24 +287,18 @@ class Window(QMainWindow):
         
     def knnmethod(self):
         if self.flag == 1:
-            print("KNN correct answers (%): ")
-            print(true_class_knn/len(accepted_Y_knn))
             correct_answers = true_class_knn/len(accepted_Y_knn)
             correct_answers = round(correct_answers,4)
             correct_answers = str(correct_answers)
-            print("cote moyenne")
-            print(sum(accepted_odd_knn)/len(accepted_odd_knn))
-            average_bet = sum(accepted_odd_knn)/len(accepted_odd_knn)
+            average_bet = sum_true_odd_knn/number_of_won_games_decision_tree
             average_bet = round(average_bet,4)
             average_bet = str(average_bet)
-            print("Gain moyen par match pour 20E par mise  : ")
-            print((true_class_knn/len(accepted_Y_knn))*(sum(accepted_odd_knn)/len(accepted_odd_knn))*20-20)
             #cote moyenne des acceptés * proportion de victoire
             average_gain = (true_class_knn/len(accepted_Y_knn))*(sum_true_odd_knn/(true_class_knn))*20-20
             average_gain = round(average_gain,4)
             average_gain = str(average_gain)
             print("-----------------")
-            self.label_1.setText("KNN correct answers (%):"+correct_answers+" \ncote moyenne :"+average_bet+" \nGain moyen par match pour 20 € de mise :"+average_gain)
+            self.label_1.setText("KNN correct answers (%):"+correct_answers+" \nAverage won odd :"+average_bet+" \nWhat you got betting 20 £ :"+average_gain)
             self.label_1.adjustSize()
         else :
             self.label_1.setText("""Please process the data before  
@@ -294,23 +308,17 @@ class Window(QMainWindow):
         
     def bayes(self):
         if self.flag == 1:
-            print("Bayes correct answers (%): ")
-            print(true_class_bayes/len(accepted_Y_bayes))
             correct_answers = true_class_bayes/len(accepted_Y_bayes)
             correct_answers = round(correct_answers,4)
             correct_answers = str(correct_answers)
-            print("cote moyenne")
-            print(sum(accepted_odd_bayes)/len(accepted_odd_bayes))
-            average_bet = sum(accepted_odd_bayes)/len(accepted_odd_bayes)
+            average_bet = sum_true_odd_bayes/number_of_won_games_bayes
             average_bet = round(average_bet,4)
             average_bet = str(average_bet)
-            print("Gain moyen par match pour 20E par mise  : ")
-            print((true_class_bayes/len(accepted_Y_bayes))*(sum(accepted_odd_bayes)/len(accepted_odd_bayes))*20-20)
             average_gain = (true_class_bayes/len(accepted_Y_bayes))*(sum_true_odd_bayes/(true_class_bayes))*20-20
             average_gain = round(average_gain,4)
             average_gain = str(average_gain)
             print("-----------------")
-            self.label_2.setText("Bayes correct answers (%):"+correct_answers+" \ncote moyenne :"+average_bet+" \nGain moyen par match pour 20 € de mise :"+average_gain)
+            self.label_2.setText("Bayes correct answers (%):"+correct_answers+" \nAverage won odd :"+average_bet+" \nWhat you got betting 20 £ :"+average_gain)
             self.label_2.adjustSize()
         else :
             self.label_2.setText("""Please process the data before 
@@ -319,23 +327,17 @@ class Window(QMainWindow):
         
     def decision_tree(self):
         if self.flag == 1:
-            print("Bayes correct answers (%): ")
-            print(true_class_decision_tree/len(accepted_Y_decision_tree))
             correct_answers = true_class_decision_tree/len(accepted_Y_decision_tree)
             correct_answers = round(correct_answers,4)
             correct_answers = str(correct_answers)
-            print("cote moyenne")
-            print(sum(accepted_odd_decision_tree)/len(accepted_odd_decision_tree))
-            average_bet = sum(accepted_odd_decision_tree)/len(accepted_odd_decision_tree)
+            average_bet = (sum_true_odd_decision_tree)/number_of_won_games_decision_tree
             average_bet = round(average_bet,4)
             average_bet = str(average_bet)
-            print("Gain moyen par match pour 20E par mise  : ")
-            print((true_class_decision_tree/len(accepted_Y_decision_tree))*(sum(accepted_odd_decision_tree)/len(accepted_odd_decision_tree))*20-20)
             average_gain = (true_class_decision_tree/len(accepted_Y_decision_tree))*(sum_true_odd_decision_tree/(true_class_decision_tree))*20-20
             average_gain = round(average_gain,4)
             average_gain = str(average_gain)
             print("-----------------")
-            self.label_3.setText("Bayes correct answers (%):"+correct_answers+" \ncote moyenne :"+average_bet+" \nGain moyen par match pour 20 € de mise :"+average_gain)
+            self.label_3.setText("Decision tree correct answers (%):"+correct_answers+" \nAverage won odd :"+average_bet+" \nWhat you got betting 20 £ :"+average_gain)
             self.label_3.adjustSize()
         else :
             self.label_3.setText("""Please process the data before 
