@@ -4,7 +4,9 @@ Created on Tue Jan 21 22:05:04 2020
 
 @author: campo
 """
-
+import datetime
+import time
+import pandas as pd
 from dataprocess import *
 import random
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QGridLayout, QCheckBox, QPushButton, QApplication, QLabel, QMainWindow, QMessageBox)
@@ -76,6 +78,10 @@ for i in range(len(Y)) :
         Y[i]=1
     else :
         Y[i]=2
+"""
+mettre ça dans le bouton process & mettre tous les X et les Y en variables globales
+"""
+
 
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier 
@@ -198,45 +204,50 @@ class Window(QMainWindow):
             average_gain = str(average_gain)
             self.label_1.setText("KNN correct answers (%):"+correct_answers+" \nAverage won odd :"+average_bet+" \nWhat you got betting 20 £ :"+average_gain)
             self.label_1.adjustSize()
+            if self.btn_4.checkState()==2:
+                self.print_knn_next_games()                
         else :
             self.label_1.setText("""Please process the data before  
             starting analyse them ...""")
             self.label_1.adjustSize()
             
+    def print_knn_next_games(self):
+        df = pd.read_csv("Next_games.csv", sep=';')
+        dataset = {}
+        df_dict_origin = df.to_dict()
+        for key in keys_to_keep : 
+            dataset[key] = df_dict_origin[key]
+        dataset_df = pd.DataFrame.from_dict(dataset)
+        df_dict = dataset_df.T.to_dict()
+        X =[]
+        X+=[list(df_dict[i].values())[1:] for i in df_dict.keys()]
+        predictions = self.knn.predict_proba(X)
+        Games_you_need_to_bet_on = []
+        number_of_bets = 0
+        margin = 0
+        for i in range(len(predictions)) :
+            # print("%s gagne avec proba %f, Match nul avec %f, et %s gagne avec proba %f" %(df_dict_origin["HomeTeam"][i],predictions[i][0],predictions[i][1], df_dict_origin["AwayTeam"][i],predictions[i][2])) 
+            if (predictions[i][0] > threshold) :
+                #print("proba calculée victoire dom = %f" %(predictions[i][0]))
+                #print("cote victoire dom = %f" %(df_dict_origin["B365H"][i]))
+                Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s" %(df_dict_origin["HomeTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
+                number_of_bets += 1
+            if (predictions[i][1] > 1/df_dict_origin["B365D"][i] + margin) :
+                #print("proba calculée match nul = %f" %(predictions[i][1]))
+                #print("cote match nul = %f" %(df_dict_origin["B365D"][i]))
+                Games_you_need_to_bet_on.append("\nParier sur match nul lors du match %s contre %s du %s"%(df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
+                number_of_bets += 1
+            if (predictions[i][2] > threshold) :
+                #print("proba calculée victoire ext = %f" %(predictions[i][2]))
+                #print("cote victoire ext = %f" %(df_dict_origin["B365A"][i]))
+                Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s"%(df_dict_origin["AwayTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
+                number_of_bets += 1
+        self.label_6.setText(' '.join(Games_you_need_to_bet_on))
+        self.label_6.adjustSize()
+        
     def knn_next_games(self):
         if self.flag == 1 and self.btn_4.checkState() == 2 :
-            df = pd.read_csv("Next_games.csv", sep=';')
-            dataset = {}
-            df_dict_origin = df.to_dict()
-            for key in keys_to_keep : 
-                dataset[key] = df_dict_origin[key]
-            dataset_df = pd.DataFrame.from_dict(dataset)
-            df_dict = dataset_df.T.to_dict()
-            X =[]
-            X+=[list(df_dict[i].values())[1:] for i in df_dict.keys()]
-            predictions = self.knn.predict_proba(X)
-            Games_you_need_to_bet_on = []
-            number_of_bets = 0
-            margin = 0
-            for i in range(len(predictions)) :
-                # print("%s gagne avec proba %f, Match nul avec %f, et %s gagne avec proba %f" %(df_dict_origin["HomeTeam"][i],predictions[i][0],predictions[i][1], df_dict_origin["AwayTeam"][i],predictions[i][2])) 
-                if (predictions[i][0] > threshold) :
-                    #print("proba calculée victoire dom = %f" %(predictions[i][0]))
-                    #print("cote victoire dom = %f" %(df_dict_origin["B365H"][i]))
-                    Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s" %(df_dict_origin["HomeTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
-                    number_of_bets += 1
-                if (predictions[i][1] > 1/df_dict_origin["B365D"][i] + margin) :
-                    #print("proba calculée match nul = %f" %(predictions[i][1]))
-                    #print("cote match nul = %f" %(df_dict_origin["B365D"][i]))
-                    Games_you_need_to_bet_on.append("\nParier sur match nul lors du match %s contre %s du %s"%(df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
-                    number_of_bets += 1
-                if (predictions[i][2] > threshold) :
-                    #print("proba calculée victoire ext = %f" %(predictions[i][2]))
-                    #print("cote victoire ext = %f" %(df_dict_origin["B365A"][i]))
-                    Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s"%(df_dict_origin["AwayTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
-                    number_of_bets += 1
-            self.label_6.setText(' '.join(Games_you_need_to_bet_on))
-            self.label_6.adjustSize()
+            self.print_knn_next_games()
         else :
             self.label_6.setText("Please process data, check the box and \ntry knn method")
             self.label_6.adjustSize()
@@ -281,44 +292,49 @@ class Window(QMainWindow):
             average_gain = str(average_gain)
             self.label_2.setText("Bayes correct answers (%):"+correct_answers+" \nAverage won odd :"+average_bet+" \nWhat you got betting 20 £ :"+average_gain)
             self.label_2.adjustSize()
+            if self.btn_5.checkState() == 2:
+                self.print_bayes_next_games()   
         else :
             self.label_2.setText("""Please process the data before 
             starting analyse them ...""")
             self.label_2.adjustSize()
+    
+    def print_bayes_next_games(self):
+        df = pd.read_csv("Next_games.csv", sep=';')
+        dataset = {}
+        df_dict_origin = df.to_dict()
+        for key in keys_to_keep : 
+            dataset[key] = df_dict_origin[key]
+        dataset_df = pd.DataFrame.from_dict(dataset)
+        df_dict = dataset_df.T.to_dict()
+        X =[]
+        X+=[list(df_dict[i].values())[1:] for i in df_dict.keys()]
+        predictions = self.gnb.predict_proba(X)
+        Games_you_need_to_bet_on = []
+        number_of_bets = 0
+        for i in range(len(predictions)) :
+            # print("%s gagne avec proba %f, Match nul avec %f, et %s gagne avec proba %f" %(df_dict_origin["HomeTeam"][i],predictions[i][0],predictions[i][1], df_dict_origin["AwayTeam"][i],predictions[i][2]))
+            if (predictions[i][0] > threshold) :
+                #print("proba calculée victoire dom = %f" %(predictions[i][0]))
+                #print("cote victoire dom = %f" %(df_dict_origin["B365H"][i]))
+                Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s" %(df_dict_origin["HomeTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
+                number_of_bets += 1
+            if (predictions[i][1] > threshold) :
+                #print("proba calculée match nul = %f" %(predictions[i][1]))
+                #print("cote match nul = %f" %(df_dict_origin["B365D"][i]))
+                Games_you_need_to_bet_on.append("\nParier sur match nul lors du match %s contre %s du %s"%(df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
+                number_of_bets += 1
+            if (predictions[i][2] > threshold) :
+                #print("proba calculée victoire ext = %f" %(predictions[i][2]))
+                #print("cote victoire ext = %f" %(df_dict_origin["B365A"][i]))
+                Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s"%(df_dict_origin["AwayTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
+                number_of_bets += 1
+        self.label_5.setText(' '.join(Games_you_need_to_bet_on))
+        self.label_5.adjustSize()             
         
     def bayes_next_games(self):
         if self.flag == 1 and self.btn_5.checkState() == 2 :
-            df = pd.read_csv("Next_games.csv", sep=';')
-            dataset = {}
-            df_dict_origin = df.to_dict()
-            for key in keys_to_keep : 
-                dataset[key] = df_dict_origin[key]
-            dataset_df = pd.DataFrame.from_dict(dataset)
-            df_dict = dataset_df.T.to_dict()
-            X =[]
-            X+=[list(df_dict[i].values())[1:] for i in df_dict.keys()]
-            predictions = self.gnb.predict_proba(X)
-            Games_you_need_to_bet_on = []
-            number_of_bets = 0
-            for i in range(len(predictions)) :
-                # print("%s gagne avec proba %f, Match nul avec %f, et %s gagne avec proba %f" %(df_dict_origin["HomeTeam"][i],predictions[i][0],predictions[i][1], df_dict_origin["AwayTeam"][i],predictions[i][2]))
-                if (predictions[i][0] > threshold) :
-                    #print("proba calculée victoire dom = %f" %(predictions[i][0]))
-                    #print("cote victoire dom = %f" %(df_dict_origin["B365H"][i]))
-                    Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s" %(df_dict_origin["HomeTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
-                    number_of_bets += 1
-                if (predictions[i][1] > threshold) :
-                    #print("proba calculée match nul = %f" %(predictions[i][1]))
-                    #print("cote match nul = %f" %(df_dict_origin["B365D"][i]))
-                    Games_you_need_to_bet_on.append("\nParier sur match nul lors du match %s contre %s du %s"%(df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
-                    number_of_bets += 1
-                if (predictions[i][2] > threshold) :
-                    #print("proba calculée victoire ext = %f" %(predictions[i][2]))
-                    #print("cote victoire ext = %f" %(df_dict_origin["B365A"][i]))
-                    Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s"%(df_dict_origin["AwayTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
-                    number_of_bets += 1
-            self.label_5.setText(' '.join(Games_you_need_to_bet_on))
-            self.label_5.adjustSize()            
+            self.print_bayes_next_games()    
         else :
             self.label_5.setText("Please process data, check the box and /ntry Bayes method")
             
@@ -361,49 +377,51 @@ class Window(QMainWindow):
             average_gain = str(average_gain)
             self.label_3.setText("Decision tree correct answers (%):"+correct_answers+" \nAverage won odd :"+average_bet+" \nWhat you got betting 20 £ :"+average_gain)
             self.label_3.adjustSize()
+            if self.btn_6.checkState() == 2:
+                self.print_decision_tree_next_games()
         else :
             self.label_3.setText("""Please process the data before 
             starting analyse them ...""")
             self.label_3.adjustSize()
+            
+    def print_decision_tree_next_games(self):
+        df = pd.read_csv("Next_games.csv", sep=';')            
+        dataset = {}
+        df_dict_origin = df.to_dict()
+        for key in keys_to_keep : 
+            dataset[key] = df_dict_origin[key]
+        dataset_df = pd.DataFrame.from_dict(dataset)
+        df_dict = dataset_df.T.to_dict()           
+        X =[]
+        X+=[list(df_dict[i].values())[1:] for i in df_dict.keys()]
+        predictions = self.dtree_model.predict_proba(X)
+        Games_you_need_to_bet_on = []
+        number_of_bets = 0
+        # avec une marge de 0 on parie 12 fois la même journée ... si on rajoutait une marge ? recalculer le gain ? 
+        # après les partiels ?
+        for i in range(len(predictions)) :
+            # print("%s gagne avec proba %f, Match nul avec %f, et %s gagne avec proba %f" %(df_dict_origin["HomeTeam"][i],predictions[i][0],predictions[i][1], df_dict_origin["AwayTeam"][i],predictions[i][2]))
+            if (predictions[i][0] > threshold) :
+                #print("proba calculée victoire dom = %f" %(predictions[i][0]))
+                #print("cote victoire dom = %f" %(df_dict_origin["B365H"][i]))
+                Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s" %(df_dict_origin["HomeTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
+                number_of_bets += 1
+            if (predictions[i][1] > threshold) :
+                #print("proba calculée match nul = %f" %(predictions[i][1]))
+                #print("cote match nul = %f" %(df_dict_origin["B365D"][i]))
+                Games_you_need_to_bet_on.append("\nParier sur match nul lors du match %s contre %s du %s"%(df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
+                number_of_bets += 1
+            if (predictions[i][2] > threshold) :
+                #print("proba calculée victoire ext = %f" %(predictions[i][2]))
+                #print("cote victoire ext = %f" %(df_dict_origin["B365A"][i]))
+                Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s"%(df_dict_origin["AwayTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
+                number_of_bets += 1
+        self.label_4.setText(' '.join(Games_you_need_to_bet_on))
+        self.label_4.adjustSize()
 
     def decision_tree_next_games(self):
-        print(self.btn_6.checkState())
-        print(self.flag)
         if self.flag == 1 and self.btn_6.checkState() == 2:
-            print(2)
-            df = pd.read_csv("Next_games.csv", sep=';')            
-            dataset = {}
-            df_dict_origin = df.to_dict()
-            for key in keys_to_keep : 
-                dataset[key] = df_dict_origin[key]
-            df_dict = dataset_df.T.to_dict()           
-            X =[]
-            X+=[list(df_dict[i].values())[1:] for i in df_dict.keys()]
-            predictions = self.dtree_model.predict_proba(X)
-            Games_you_need_to_bet_on = []
-            number_of_bets = 0
-            # avec une marge de 0 on parie 12 fois la même journée ... si on rajoutait une marge ? recalculer le gain ? 
-            # après les partiels ?
-            margin = 0
-            for i in range(len(predictions)) :
-                # print("%s gagne avec proba %f, Match nul avec %f, et %s gagne avec proba %f" %(df_dict_origin["HomeTeam"][i],predictions[i][0],predictions[i][1], df_dict_origin["AwayTeam"][i],predictions[i][2]))
-                if (predictions[i][0] > threshold) :
-                    #print("proba calculée victoire dom = %f" %(predictions[i][0]))
-                    #print("cote victoire dom = %f" %(df_dict_origin["B365H"][i]))
-                    Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s" %(df_dict_origin["HomeTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
-                    number_of_bets += 1
-                if (predictions[i][1] > threshold) :
-                    #print("proba calculée match nul = %f" %(predictions[i][1]))
-                    #print("cote match nul = %f" %(df_dict_origin["B365D"][i]))
-                    Games_you_need_to_bet_on.append("\nParier sur match nul lors du match %s contre %s du %s"%(df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
-                    number_of_bets += 1
-                if (predictions[i][2] > threshold) :
-                    #print("proba calculée victoire ext = %f" %(predictions[i][2]))
-                    #print("cote victoire ext = %f" %(df_dict_origin["B365A"][i]))
-                    Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s"%(df_dict_origin["AwayTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
-                    number_of_bets += 1
-            self.label_4.setText(' '.join(Games_you_need_to_bet_on))
-            self.label_4.adjustSize()
+            self.print_decision_tree_next_games() 
         else :
             self.label_4.setText("Please process data, check the box and \ntry decision tree method")
             
