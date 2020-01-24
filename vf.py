@@ -330,6 +330,13 @@ class Window(QMainWindow):
             r = random.random()
             random.shuffle(X, lambda:r)
             random.shuffle(Y, lambda:r)
+            df = pd.read_csv("Next_games.csv", sep=';')
+            dataset = {}
+            df_dict_origin = df.to_dict()
+            for key in keys_to_keep : 
+                dataset[key] = df_dict_origin[key]
+            dataset_df = pd.DataFrame.from_dict(dataset)
+            df_dict = dataset_df.T.to_dict()
             training_X = X[:int(len(X)-len(X)/5)]
             testing_X = X[int(len(X)-len(X)/5):]
             training_Y = Y[:int(len(Y)-len(Y)/5)]
@@ -341,12 +348,14 @@ class Window(QMainWindow):
             accepted_Y_decision_tree = [] # résultat du match 0 1 ou 2
             sum_true_odd_decision_tree = 0 #somme des cotes des matchs gagnés
             number_of_won_games_decision_tree = 0
+            self.Games_you_need_to_bet_on_decision_tree = []
             for k in range (len(dtree_predictions)) : 
                 for i in range(len(dtree_predictions[k])) : 
                     if dtree_predictions[k][i]>threshold : 
                         accepted_games_decision_tree+=[i] #prédiction
                         accepted_Y_decision_tree+=[testing_Y[k]] #vrai résultat
                         accepted_odd_decision_tree+=[testing_X[k][i]]
+                        self.Games_you_need_to_bet_on_decision_tree.append("\nParier sur %s lors du match %s contre %s du %s" %(df_dict_origin["HomeTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))                        
                         if testing_Y[k] == i:
                             sum_true_odd_decision_tree += testing_X[k][i]
                             number_of_won_games_decision_tree += 1
@@ -371,37 +380,7 @@ class Window(QMainWindow):
 
     def decision_tree_next_games(self):
         if self.flag == 1 and self.btn_6.checkState() == 2:
-            df = pd.read_csv("Next_games.csv", sep=';')
-            dataset = {}
-            df_dict_origin = df.to_dict()
-            for key in keys_to_keep : 
-                dataset[key] = df_dict_origin[key]
-            dataset_df = pd.DataFrame.from_dict(dataset)
-            df_dict = dataset_df.T.to_dict()
-            X =[]
-            X+=[list(df_dict[i].values())[1:] for i in df_dict.keys()]
-            predictions = self.dtree_model.predict_proba(X)
-            margin = 0
-            Games_you_need_to_bet_on = []
-            number_of_bets = 0
-            for i in range(len(predictions)) :
-                # print("%s gagne avec proba %f, Match nul avec %f, et %s gagne avec proba %f" %(df_dict_origin["HomeTeam"][i],predictions[i][0],predictions[i][1], df_dict_origin["AwayTeam"][i],predictions[i][2]))
-                if (predictions[i][0] > 1/df_dict_origin["B365H"][i] + margin) :
-                    #print("proba calculée victoire dom = %f" %(predictions[i][0]))
-                    #print("cote victoire dom = %f" %(df_dict_origin["B365H"][i]))
-                    Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s" %(df_dict_origin["HomeTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
-                    number_of_bets += 1
-                if (predictions[i][1] > 1/df_dict_origin["B365D"][i] + margin) :
-                    #print("proba calculée match nul = %f" %(predictions[i][1]))
-                    #print("cote match nul = %f" %(df_dict_origin["B365D"][i]))
-                    Games_you_need_to_bet_on.append("\nParier sur match nul lors du match %s contre %s du %s"%(df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
-                    number_of_bets += 1
-                if (predictions[i][2] > 1/df_dict_origin["B365A"][i] + margin) :
-                    #print("proba calculée victoire ext = %f" %(predictions[i][2]))
-                    #print("cote victoire ext = %f" %(df_dict_origin["B365A"][i]))
-                    Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s"%(df_dict_origin["AwayTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
-                    number_of_bets += 1
-            self.label_4.setText(' '.join(Games_you_need_to_bet_on))
+            self.label_4.setText(' '.join(self.Games_you_need_to_bet_on_decision_tree))
             self.label_4.adjustSize()
         else :
             self.label_4.setText("Please process data, check the box and \ntry decision tree method")
