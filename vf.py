@@ -52,6 +52,10 @@ class Window(QMainWindow):
         self.btn_Quit = QPushButton("Quit", self)
         self.btn_Quit.clicked.connect(self.quitt)
         self.threshold = 0.5
+        self.btn_svm = QPushButton("svm method", self)
+        self.btn_svm.clicked.connect(self.svmmethod)
+        self.label_svm = QLabel(self)
+        self.label_svm.setText("")
         self.btn_Thresh = QPushButton("Threshold value", self)
         self.btn_Thresh.clicked.connect(self.threshold_value)
         self.label_Thresh = QLineEdit(self)
@@ -87,12 +91,9 @@ class Window(QMainWindow):
         self.label_4 = QLabel(self)
         self.label_4.setText("Please process data and try decision tree \nmethod before checking the box")
         self.position()
-        """
-        self.btn_svm = QPushButton("svm method", self)
-        self.btn_svm.clicked.connect(self.svmmethod)
-        self.label_svm = QLabel(self)
-        self.label_svm.setText("")
-        """
+        
+       
+        
         self.show()        
         
     def position(self):
@@ -126,11 +127,11 @@ class Window(QMainWindow):
         self.btn_4.adjustSize()
         self.label_6.move(120,620)
         self.label_5.adjustSize()
-        """
+        
         self.btn_svm.move(1550,350)
         self.btn_svm.adjustSize()
         self.label_svm.move(1550,620)
-        self.label_svm.adjustSize() """
+        self.label_svm.adjustSize() 
         self.label_6.adjustSize()
         
 
@@ -476,10 +477,9 @@ class Window(QMainWindow):
         self.label_0.setText(file_name_total +"\n data successfully processed")
         self.label_0.adjustSize()
         self.flag = 1
-"""        
+ 
     def svmmethod(self):
         if self.flag == 1:
-            print("aa")
             self.svm_method_triggered = 1
             r = random.random()
             random.shuffle(self.X, lambda:r)
@@ -561,10 +561,9 @@ class Window(QMainWindow):
     def svm_next_games(self):
         if self.flag == 1 and self.btn_svm.checkState() == 2 :
             self.print_svm_next_games()
-            
-         else :
+        else :
             self.label_svm.setText("Please process data, check the box and \ntry svm method")
-            self.label_svm.adjustSize()     """
+            self.label_svm.adjustSize()
 
     
         
