@@ -225,17 +225,17 @@ class Window(QMainWindow):
             if (predictions[i][0] > self.threshold) :
                 #print("proba calculée victoire dom = %f" %(predictions[i][0]))
                 #print("cote victoire dom = %f" %(df_dict_origin["B365H"][i]))
-                Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s" %(df_dict_origin["HomeTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
+                Games_you_need_to_bet_on.append("\nBet on %s during %s against %s on %s" %(df_dict_origin["HomeTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
                 number_of_bets += 1
             if (predictions[i][1] > self.threshold) :
                 #print("proba calculée match nul = %f" %(predictions[i][1]))
                 #print("cote match nul = %f" %(df_dict_origin["B365D"][i]))
-                Games_you_need_to_bet_on.append("\nParier sur match nul lors du match %s contre %s du %s"%(df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
+                Games_you_need_to_bet_on.append("\nBet on a draw during %s against %s on %s"%(df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
                 number_of_bets += 1
             if (predictions[i][2] > self.threshold) :
                 #print("proba calculée victoire ext = %f" %(predictions[i][2]))
                 #print("cote victoire ext = %f" %(df_dict_origin["B365A"][i]))
-                Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s"%(df_dict_origin["AwayTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
+                Games_you_need_to_bet_on.append("\nBet on %s during %s against %s on %s"%(df_dict_origin["AwayTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
                 number_of_bets += 1
         self.label_6.setText(' '.join(Games_you_need_to_bet_on))
         self.label_6.adjustSize()
@@ -314,17 +314,17 @@ class Window(QMainWindow):
             if (predictions[i][0] > self.threshold) :
                 #print("proba calculée victoire dom = %f" %(predictions[i][0]))
                 #print("cote victoire dom = %f" %(df_dict_origin["B365H"][i]))
-                Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s" %(df_dict_origin["HomeTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
+                Games_you_need_to_bet_on.append("\nBet on %s during %s against %s on %s" %(df_dict_origin["HomeTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
                 number_of_bets += 1
             if (predictions[i][1] > self.threshold) :
                 #print("proba calculée match nul = %f" %(predictions[i][1]))
                 #print("cote match nul = %f" %(df_dict_origin["B365D"][i]))
-                Games_you_need_to_bet_on.append("\nParier sur match nul lors du match %s contre %s du %s"%(df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
+                Games_you_need_to_bet_on.append("\nBet on a draw during %s against %s on %s"%(df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
                 number_of_bets += 1
             if (predictions[i][2] > self.threshold) :
                 #print("proba calculée victoire ext = %f" %(predictions[i][2]))
                 #print("cote victoire ext = %f" %(df_dict_origin["B365A"][i]))
-                Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s"%(df_dict_origin["AwayTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
+                Games_you_need_to_bet_on.append("\nBet on %s during %s against %s on %s"%(df_dict_origin["AwayTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
                 number_of_bets += 1
         self.label_5.setText(' '.join(Games_you_need_to_bet_on))
         self.label_5.adjustSize()             
@@ -402,17 +402,17 @@ class Window(QMainWindow):
             if (predictions[i][0] > self.threshold) :
                 #print("proba calculée victoire dom = %f" %(predictions[i][0]))
                 #print("cote victoire dom = %f" %(df_dict_origin["B365H"][i]))
-                Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s" %(df_dict_origin["HomeTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
+                Games_you_need_to_bet_on.append("\nBet on %s during %s against %s on %s" %(df_dict_origin["HomeTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
                 number_of_bets += 1
             if (predictions[i][1] > self.threshold) :
                 #print("proba calculée match nul = %f" %(predictions[i][1]))
                 #print("cote match nul = %f" %(df_dict_origin["B365D"][i]))
-                Games_you_need_to_bet_on.append("\nParier sur match nul lors du match %s contre %s du %s"%(df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
+                Games_you_need_to_bet_on.append("\nBet on a draw during %s against %s on %s"%(df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
                 number_of_bets += 1
             if (predictions[i][2] > self.threshold) :
                 #print("proba calculée victoire ext = %f" %(predictions[i][2]))
                 #print("cote victoire ext = %f" %(df_dict_origin["B365A"][i]))
-                Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s"%(df_dict_origin["AwayTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
+                Games_you_need_to_bet_on.append("\nBet on %s during %s against %s on %s"%(df_dict_origin["AwayTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
                 number_of_bets += 1
         self.label_4.setText(' '.join(Games_you_need_to_bet_on))
         self.label_4.adjustSize()
