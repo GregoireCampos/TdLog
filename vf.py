@@ -9,7 +9,7 @@ import time
 import pandas as pd
 from dataprocess import *
 import random
-from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QGridLayout, QCheckBox, QPushButton, QApplication, QLabel, QMainWindow, QMessageBox)
+from PyQt5.QtWidgets import (QWidget, QLineEdit, QVBoxLayout, QGridLayout, QCheckBox, QPushButton, QApplication, QLabel, QMainWindow, QMessageBox)
 from matplotlib.image import *
 from PyQt5 import QtGui
 from PyQt5 import QtCore
@@ -28,56 +28,6 @@ from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split 
 import math
 import sys
-
-df =pd.read_csv('training_file.csv', sep=';')         
-threshold = 0.5
-## Creating a training files from seasons 07-08 to 18-19
-keys_to_keep = ["FTR","B365H","B365D","B365A","HTGDBG","ATGDBG","HTPBG","ATPBG"]
-X =[]
-Y = []
-file_name_total = ""
-
-for k in range(7,19) :
-    file_name = str(k)+"-"+str(k+1)+"_processed.csv"
-    file_name_total = file_name_total+"""
-    """+file_name
-    df=pd.read_csv('Training_Files/France/'+file_name, sep=',')
-    #sep = "," fot F1_processed or sep = ";" for training_file
-    #I only keep "before-game data" except FTR which I will use to train my classification algorithm
-    dataset = {}
-    df_dict = df.to_dict()
-    print(file_name)
-    for key in keys_to_keep : 
-        dataset[key] = df_dict[key]
-    dataset_df = pd.DataFrame.from_dict(dataset)
-    df_dict = dataset_df.T.to_dict()
-    X+=[list(df_dict[i].values())[1:] for i in df_dict.keys()]
-    Y+=[list(df_dict[i].values())[0] for i in df_dict.keys()]
-
-#check for NaN values
-flag = 0
-X_copy=[]
-Y_copy=[]
-for i in range(len(X)) :
-    for k in range(len(X[i])):
-        if math.isnan(X[i][k]):
-            flag = 1
-    if flag ==0 :
-        X_copy+=[X[i]]
-        Y_copy+=[Y[i]]
-    else :
-        print("Incorrect data : " + str(i))
-    flag = 0
-X = X_copy
-Y=Y_copy
-
-for i in range(len(Y)) : 
-    if Y[i]=="H" : 
-        Y[i]=0
-    elif Y[i] =="D" : 
-        Y[i]=1
-    else :
-        Y[i]=2
 """
 mettre ça dans le bouton process & mettre tous les X et les Y en variables globales
 """
@@ -100,8 +50,12 @@ class Window(QMainWindow):
     def home(self):
         self.btn_Quit = QPushButton("Quit", self)
         self.btn_Quit.clicked.connect(self.quitt)
+        self.threshold = 0.5
+        self.btn_Thresh = QPushButton("Threshold value", self)
+        self.btn_Thresh.clicked.connect(self.threshold_value)
+        self.label_Thresh = QLineEdit(self)
         self.btn_0 = QPushButton("Process data", self)
-        self.btn_0.clicked.connect(self.processed_data)  
+        self.btn_0.clicked.connect(self.processed_data)
         self.label_0 = QLabel(self)
         self.label_0.setText("Please process data")        
         self.btn_1 = QPushButton("KNN method", self)
@@ -137,6 +91,10 @@ class Window(QMainWindow):
         self.btn_0.adjustSize()
         self.label_0.move(0,50)
         self.label_0.adjustSize()
+        self.btn_Thresh.move(600,0)
+        self.btn_Thresh.adjustSize()
+        self.label_Thresh.move(650,50)
+        self.adjustSize()
         self.btn_1.move(250,350)
         self.btn_1.adjustSize()
         self.label_1.move(250,400)
@@ -163,16 +121,20 @@ class Window(QMainWindow):
     def quitt(self):
         self.close()
     
+    def threshold_value(self):
+        self.threshold = float(self.label_Thresh.text())
+        
+    
     
     def knnmethod(self):
         if self.flag == 1:
             r = random.random()
-            random.shuffle(X, lambda:r)
-            random.shuffle(Y, lambda:r)
-            training_X = X[:int(len(X)-len(X)/5)]
-            testing_X = X[int(len(X)-len(X)/5):]       
-            training_Y = Y[:int(len(Y)-len(Y)/5)]
-            testing_Y = Y[int(len(Y)-len(Y)/5):]        
+            random.shuffle(self.X, lambda:r)
+            random.shuffle(self.Y, lambda:r)
+            training_X = self.X[:int(len(self.X)-len(self.X)/5)]
+            testing_X = self.X[int(len(self.X)-len(self.X)/5):]       
+            training_Y = self.Y[:int(len(self.Y)-len(self.Y)/5)]
+            testing_Y = self.Y[int(len(self.Y)-len(self.Y)/5):]        
             self.knn = KNeighborsClassifier(n_neighbors = 3).fit(training_X, training_Y) 
             # creating a confusion matrix 
             knn_predictions = self.knn.predict_proba(testing_X) 
@@ -183,7 +145,7 @@ class Window(QMainWindow):
             number_of_won_games_knn = 0
             for k in range (len(knn_predictions)) : 
                 for i in range(len(knn_predictions[k])) : 
-                    if knn_predictions[k][i]>threshold : 
+                    if knn_predictions[k][i]>self.threshold : 
                         accepted_games_knn+=[i]
                         accepted_Y_knn+=[testing_Y[k]]
                         accepted_odd_knn+=[testing_X[k][i]] 
@@ -205,7 +167,7 @@ class Window(QMainWindow):
             self.label_1.setText("KNN correct answers (%):"+correct_answers+" \nAverage won odd :"+average_bet+" \nWhat you got betting 20 £ :"+average_gain)
             self.label_1.adjustSize()
             if self.btn_4.checkState()==2:
-                self.print_knn_next_games()                
+                self.print_knn_next_games() 
         else :
             self.label_1.setText("""Please process the data before  
             starting analyse them ...""")
@@ -215,29 +177,29 @@ class Window(QMainWindow):
         df = pd.read_csv("Next_games.csv", sep=';')
         dataset = {}
         df_dict_origin = df.to_dict()
-        for key in keys_to_keep : 
+        for key in self.keys_to_keep : 
             dataset[key] = df_dict_origin[key]
         dataset_df = pd.DataFrame.from_dict(dataset)
         df_dict = dataset_df.T.to_dict()
-        X =[]
-        X+=[list(df_dict[i].values())[1:] for i in df_dict.keys()]
-        predictions = self.knn.predict_proba(X)
+        X_knn =[]
+        X_knn+=[list(df_dict[i].values())[1:] for i in df_dict.keys()]
+        predictions = self.knn.predict_proba(X_knn)
         Games_you_need_to_bet_on = []
         number_of_bets = 0
         margin = 0
         for i in range(len(predictions)) :
             # print("%s gagne avec proba %f, Match nul avec %f, et %s gagne avec proba %f" %(df_dict_origin["HomeTeam"][i],predictions[i][0],predictions[i][1], df_dict_origin["AwayTeam"][i],predictions[i][2])) 
-            if (predictions[i][0] > threshold) :
+            if (predictions[i][0] > self.threshold) :
                 #print("proba calculée victoire dom = %f" %(predictions[i][0]))
                 #print("cote victoire dom = %f" %(df_dict_origin["B365H"][i]))
                 Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s" %(df_dict_origin["HomeTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
                 number_of_bets += 1
-            if (predictions[i][1] > 1/df_dict_origin["B365D"][i] + margin) :
+            if (predictions[i][1] > self.threshold) :
                 #print("proba calculée match nul = %f" %(predictions[i][1]))
                 #print("cote match nul = %f" %(df_dict_origin["B365D"][i]))
                 Games_you_need_to_bet_on.append("\nParier sur match nul lors du match %s contre %s du %s"%(df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
                 number_of_bets += 1
-            if (predictions[i][2] > threshold) :
+            if (predictions[i][2] > self.threshold) :
                 #print("proba calculée victoire ext = %f" %(predictions[i][2]))
                 #print("cote victoire ext = %f" %(df_dict_origin["B365A"][i]))
                 Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s"%(df_dict_origin["AwayTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
@@ -257,12 +219,12 @@ class Window(QMainWindow):
     def bayes(self):
         if self.flag == 1:
             r = random.random()
-            random.shuffle(X, lambda:r)
-            random.shuffle(Y, lambda:r)
-            training_X = X[:int(len(X)-len(X)/5)]
-            testing_X = X[int(len(X)-len(X)/5):]          
-            training_Y = Y[:int(len(Y)-len(Y)/5)]
-            testing_Y = Y[int(len(Y)-len(Y)/5):]
+            random.shuffle(self.X, lambda:r)
+            random.shuffle(self.Y, lambda:r)
+            training_X = self.X[:int(len(self.X)-len(self.X)/5)]
+            testing_X = self.X[int(len(self.X)-len(self.X)/5):]          
+            training_Y = self.Y[:int(len(self.Y)-len(self.Y)/5)]
+            testing_Y = self.Y[int(len(self.Y)-len(self.Y)/5):]
             self.gnb = GaussianNB().fit(training_X, training_Y) 
             gnb_predictions = self.gnb.predict_proba(testing_X) 
             accepted_games_bayes = []
@@ -272,7 +234,7 @@ class Window(QMainWindow):
             number_of_won_games_bayes = 0
             for k in range (len(gnb_predictions)) : 
                 for i in range(len(gnb_predictions[k])) : 
-                    if gnb_predictions[k][i]>threshold : #si la proba du joueur i de gagner le match k est au dessus du threshold
+                    if gnb_predictions[k][i]>self.threshold : #si la proba du joueur i de gagner le match k est au dessus du threshold
                         accepted_games_bayes+=[i]
                         accepted_Y_bayes+=[testing_Y[k]]
                         accepted_odd_bayes+=[testing_X[k][i]] 
@@ -303,28 +265,28 @@ class Window(QMainWindow):
         df = pd.read_csv("Next_games.csv", sep=';')
         dataset = {}
         df_dict_origin = df.to_dict()
-        for key in keys_to_keep : 
+        for key in self.keys_to_keep : 
             dataset[key] = df_dict_origin[key]
         dataset_df = pd.DataFrame.from_dict(dataset)
         df_dict = dataset_df.T.to_dict()
-        X =[]
-        X+=[list(df_dict[i].values())[1:] for i in df_dict.keys()]
-        predictions = self.gnb.predict_proba(X)
+        X_bayes =[]
+        X_bayes+=[list(df_dict[i].values())[1:] for i in df_dict.keys()]
+        predictions = self.gnb.predict_proba(X_bayes)
         Games_you_need_to_bet_on = []
         number_of_bets = 0
         for i in range(len(predictions)) :
             # print("%s gagne avec proba %f, Match nul avec %f, et %s gagne avec proba %f" %(df_dict_origin["HomeTeam"][i],predictions[i][0],predictions[i][1], df_dict_origin["AwayTeam"][i],predictions[i][2]))
-            if (predictions[i][0] > threshold) :
+            if (predictions[i][0] > self.threshold) :
                 #print("proba calculée victoire dom = %f" %(predictions[i][0]))
                 #print("cote victoire dom = %f" %(df_dict_origin["B365H"][i]))
                 Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s" %(df_dict_origin["HomeTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
                 number_of_bets += 1
-            if (predictions[i][1] > threshold) :
+            if (predictions[i][1] > self.threshold) :
                 #print("proba calculée match nul = %f" %(predictions[i][1]))
                 #print("cote match nul = %f" %(df_dict_origin["B365D"][i]))
                 Games_you_need_to_bet_on.append("\nParier sur match nul lors du match %s contre %s du %s"%(df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
                 number_of_bets += 1
-            if (predictions[i][2] > threshold) :
+            if (predictions[i][2] > self.threshold) :
                 #print("proba calculée victoire ext = %f" %(predictions[i][2]))
                 #print("cote victoire ext = %f" %(df_dict_origin["B365A"][i]))
                 Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s"%(df_dict_origin["AwayTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
@@ -341,12 +303,12 @@ class Window(QMainWindow):
     def decision_tree(self):
         if self.flag == 1:
             r = random.random()
-            random.shuffle(X, lambda:r)
-            random.shuffle(Y, lambda:r)
-            training_X = X[:int(len(X)-len(X)/5)]
-            testing_X = X[int(len(X)-len(X)/5):]
-            training_Y = Y[:int(len(Y)-len(Y)/5)]
-            testing_Y = Y[int(len(Y)-len(Y)/5):] 
+            random.shuffle(self.X, lambda:r)
+            random.shuffle(self.Y, lambda:r)
+            training_X = self.X[:int(len(self.X)-len(self.X)/5)]
+            testing_X = self.X[int(len(self.X)-len(self.X)/5):]
+            training_Y = self.Y[:int(len(self.Y)-len(self.Y)/5)]
+            testing_Y = self.Y[int(len(self.Y)-len(self.Y)/5):] 
             self.dtree_model = DecisionTreeClassifier(max_depth = 10).fit(training_X, training_Y) 
             dtree_predictions = self.dtree_model.predict_proba(testing_X) 
             accepted_games_decision_tree = []
@@ -356,7 +318,7 @@ class Window(QMainWindow):
             number_of_won_games_decision_tree = 0
             for k in range (len(dtree_predictions)) : 
                 for i in range(len(dtree_predictions[k])) : 
-                    if dtree_predictions[k][i]>threshold :
+                    if dtree_predictions[k][i]>self.threshold :
                         accepted_games_decision_tree+=[i] #prédiction
                         accepted_Y_decision_tree+=[testing_Y[k]] #vrai résultat
                         accepted_odd_decision_tree+=[testing_X[k][i]]
@@ -388,30 +350,30 @@ class Window(QMainWindow):
         df = pd.read_csv("Next_games.csv", sep=';')            
         dataset = {}
         df_dict_origin = df.to_dict()
-        for key in keys_to_keep : 
+        for key in self.keys_to_keep : 
             dataset[key] = df_dict_origin[key]
         dataset_df = pd.DataFrame.from_dict(dataset)
         df_dict = dataset_df.T.to_dict()           
-        X =[]
-        X+=[list(df_dict[i].values())[1:] for i in df_dict.keys()]
-        predictions = self.dtree_model.predict_proba(X)
+        X_dtree =[]
+        X_dtree+=[list(df_dict[i].values())[1:] for i in df_dict.keys()]
+        predictions = self.dtree_model.predict_proba(X_dtree)
         Games_you_need_to_bet_on = []
         number_of_bets = 0
         # avec une marge de 0 on parie 12 fois la même journée ... si on rajoutait une marge ? recalculer le gain ? 
         # après les partiels ?
         for i in range(len(predictions)) :
             # print("%s gagne avec proba %f, Match nul avec %f, et %s gagne avec proba %f" %(df_dict_origin["HomeTeam"][i],predictions[i][0],predictions[i][1], df_dict_origin["AwayTeam"][i],predictions[i][2]))
-            if (predictions[i][0] > threshold) :
+            if (predictions[i][0] > self.threshold) :
                 #print("proba calculée victoire dom = %f" %(predictions[i][0]))
                 #print("cote victoire dom = %f" %(df_dict_origin["B365H"][i]))
                 Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s" %(df_dict_origin["HomeTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
                 number_of_bets += 1
-            if (predictions[i][1] > threshold) :
+            if (predictions[i][1] > self.threshold) :
                 #print("proba calculée match nul = %f" %(predictions[i][1]))
                 #print("cote match nul = %f" %(df_dict_origin["B365D"][i]))
                 Games_you_need_to_bet_on.append("\nParier sur match nul lors du match %s contre %s du %s"%(df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
                 number_of_bets += 1
-            if (predictions[i][2] > threshold) :
+            if (predictions[i][2] > self.threshold) :
                 #print("proba calculée victoire ext = %f" %(predictions[i][2]))
                 #print("cote victoire ext = %f" %(df_dict_origin["B365A"][i]))
                 Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s"%(df_dict_origin["AwayTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
@@ -426,6 +388,55 @@ class Window(QMainWindow):
             self.label_4.setText("Please process data, check the box and \ntry decision tree method")
             
     def processed_data(self):
+        df =pd.read_csv('training_file.csv', sep=';')         
+        self.threshold = 0.5
+        ## Creating a training files from seasons 07-08 to 18-19
+        self.keys_to_keep = ["FTR","B365H","B365D","B365A","HTGDBG","ATGDBG","HTPBG","ATPBG"]
+        self.X =[]
+        self.Y = []
+        file_name_total = ""
+        
+        for k in range(7,19) :
+            file_name = str(k)+"-"+str(k+1)+"_processed.csv"
+            file_name_total = file_name_total+"""
+            """+file_name
+            df=pd.read_csv('Training_Files/France/'+file_name, sep=',')
+            #sep = "," fot F1_processed or sep = ";" for training_file
+            #I only keep "before-game data" except FTR which I will use to train my classification algorithm
+            dataset = {}
+            df_dict = df.to_dict()
+            print(file_name)
+            for key in self.keys_to_keep : 
+                dataset[key] = df_dict[key]
+            dataset_df = pd.DataFrame.from_dict(dataset)
+            df_dict = dataset_df.T.to_dict()
+            self.X+=[list(df_dict[i].values())[1:] for i in df_dict.keys()]
+            self.Y+=[list(df_dict[i].values())[0] for i in df_dict.keys()]
+        
+        #check for NaN values
+        flag = 0
+        X_copy=[]
+        Y_copy=[]
+        for i in range(len(self.X)) :
+            for k in range(len(self.X[i])):
+                if math.isnan(self.X[i][k]):
+                    flag = 1
+            if flag ==0 :
+                X_copy+=[self.X[i]]
+                Y_copy+=[self.Y[i]]
+            else :
+                print("Incorrect data : " + str(i))
+            flag = 0
+        self.X = X_copy
+        self.Y=Y_copy
+        
+        for i in range(len(self.Y)) : 
+            if self.Y[i]=="H" : 
+                self.Y[i]=0
+            elif self.Y[i] =="D" : 
+                self.Y[i]=1
+            else :
+                self.Y[i]=2
         self.label_0.setText(file_name_total +"\n data successfully processed")
         self.label_0.adjustSize()
         self.flag = 1
