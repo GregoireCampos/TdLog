@@ -9,7 +9,9 @@ import time
 import pandas as pd
 from dataprocess import *
 import random
-from PyQt5.QtWidgets import (QWidget, QLineEdit, QVBoxLayout, QGridLayout, QCheckBox, QPushButton, QApplication, QLabel, QMainWindow, QMessageBox)
+from PyQt5.QtWidgets import (QWidget, QLineEdit, QVBoxLayout, QGridLayout, QCheckBox, QPushButton, 
+                             QApplication, QLabel, QMainWindow, QMessageBox)
+import sys
 from matplotlib.image import *
 from PyQt5 import QtGui
 from PyQt5 import QtCore
@@ -27,7 +29,7 @@ from sklearn import datasets
 from sklearn.metrics import confusion_matrix 
 from sklearn.model_selection import train_test_split 
 import math
-import sys
+
 """
 mettre ça dans le bouton process & mettre tous les X et les Y en variables globales
 """
@@ -58,6 +60,8 @@ class Window(QMainWindow):
         self.btn_Thresh.clicked.connect(self.threshold_value)
         self.label_Thresh = QLineEdit(self)
         self.label_Thresh.setText("0.5")
+        self.label_Thresh_text = QLabel(self)
+        self.label_Thresh_text.setText("")
         self.btn_0 = QPushButton("Process data", self)
         self.btn_0.clicked.connect(self.processed_data)
         self.label_0 = QLabel(self)
@@ -98,7 +102,8 @@ class Window(QMainWindow):
         self.btn_Thresh.move(600,0)
         self.btn_Thresh.adjustSize()
         self.label_Thresh.move(650,50)
-        self.adjustSize()
+        self.label_Thresh_text.move(650,100)
+        self.label_Thresh_text.adjustSize()
         self.btn_1.move(250,350)
         self.btn_1.adjustSize()
         self.label_1.move(250,400)
@@ -126,19 +131,24 @@ class Window(QMainWindow):
         self.close()
     
     def threshold_value(self):
-        self.threshold = float(self.label_Thresh.text())
-        if self.flag == 1  and self.knn_method_triggered == 1 :
-            self.knnmethod()
-        if self.btn_4.checkState()==2 and self.flag == 1 :
-                self.print_knn_next_games() 
-        if self.flag == 1  and self.bayes_method_triggered == 1 :
-            self.bayes()
-        if self.btn_5.checkState() == 2 and self.flag == 1 :
-                self.print_bayes_next_games() 
-        if self.flag == 1  and self.dtree_method_triggered == 1 :
-            self.decision_tree()
-        if self.btn_6.checkState() == 2 and self.flag == 1 :
-                self.print_decision_tree_next_games()
+        print(self.label_Thresh.text())
+        if (float(self.label_Thresh.text()) > 1):
+            self.label_Thresh_text.setText("please enter a value between 0 and 1")
+            self.label_Thresh_text.adjustSize()
+        else :
+            self.threshold = float(self.label_Thresh.text())
+            if self.flag == 1  and self.knn_method_triggered == 1 :
+                self.knnmethod()
+            if self.btn_4.checkState()==2 and self.flag == 1 :
+                    self.print_knn_next_games() 
+            if self.flag == 1  and self.bayes_method_triggered == 1 :
+                self.bayes()
+            if self.btn_5.checkState() == 2 and self.flag == 1 :
+                    self.print_bayes_next_games() 
+            if self.flag == 1  and self.dtree_method_triggered == 1 :
+                self.decision_tree()
+            if self.btn_6.checkState() == 2 and self.flag == 1 :
+                    self.print_decision_tree_next_games()
     
     
     def knnmethod(self):
@@ -259,6 +269,9 @@ class Window(QMainWindow):
                             sum_true_odd_bayes += testing_X[k][i]
                             number_of_won_games_bayes += 1
             cm_bayes = confusion_matrix(accepted_Y_bayes, accepted_games_bayes) 
+            """
+            si on met un threshold trop haut ça plante parce que c'est out of bounds
+            """
             true_class_bayes = cm_bayes[0][0]+cm_bayes[1][1]+cm_bayes[2][2]
             correct_answers = true_class_bayes/len(accepted_Y_bayes)
             correct_answers = round(correct_answers,4)
