@@ -137,34 +137,33 @@ print((true_class/len(accepted_Y))*(sum(accepted_odd)/len(accepted_odd))*20-20)
 print("-----------------")
 """
 
-#training a linear SVM classifier 
-#from sklearn.svm import SVC 
-#svm_model_linear = SVC(kernel = 'linear', C = 1, probability = True).fit(training_X, training_Y) 
-#svm_predictions = svm_model_linear.predict_proba(testing_X) 
+# training a linear SVM classifier 
+from sklearn.svm import SVC 
+svm_model_linear = SVC(kernel = 'linear', C = 1, probability = True).fit(training_X, training_Y) 
+svm_predictions = svm_model_linear.predict_proba(testing_X) 
 
-#accepted_games = []
-#accepted_Y = []
-#accepted_odd =[]
-
-#for k in range (len(svm_predictions)) : 
-#    for i in range(len(svm_predictions[k])) : 
-#        if svm_predictions[k][i]>threshold : 
-#            accepted_games+=[i]
-#            accepted_Y+=[testing_Y[k]]
-#            accepted_odd+=[testing_X[k][i]]
-#model accuracy for X_test   
-#accuracy = svm_model_linear.score(testing_X, testing_Y) 
+accepted_games = []
+accepted_Y = []
+accepted_odd =[]
+for k in range (len(svm_predictions)) : 
+    for i in range(len(svm_predictions[k])) : 
+        if svm_predictions[k][i]>threshold : 
+            accepted_games+=[i]            
+            accepted_Y+=[testing_Y[k]]
+            accepted_odd+=[testing_X[k][i]]
+model accuracy for X_test   
+accuracy = svm_model_linear.score(testing_X, testing_Y) 
 
 # creating a confusion matrix 
-#cm = confusion_matrix(accepted_Y, accepted_games)
-#true_class = cm[0][0]+cm[1][1]+cm[2][2]
-#print(" SVM correct answers (%): ")
-#print(true_class/len(accepted_Y))
-#print("cote moyenne")
-#print(sum(accepted_odd)/len(accepted_odd))
-#print("Gain moyenpar match pour 20E par mise  : ")
-#print((true_class/len(accepted_Y))*(sum(accepted_odd)/len(accepted_odd))*20-20)
-#print("-----------------")
+cm = confusion_matrix(accepted_Y, accepted_games)
+true_class = cm[0][0]+cm[1][1]+cm[2][2]
+print(" SVM correct answers (%): ")
+print(true_class/len(accepted_Y))
+print("cote moyenne")
+print(sum(accepted_odd)/len(accepted_odd))
+print("Gain moyenpar match pour 20E par mise  : ")
+print((true_class/len(accepted_Y))*(sum(accepted_odd)/len(accepted_odd))*20-20)
+print("-----------------")
 
 # training a KNN classifier 
 from sklearn.neighbors import KNeighborsClassifier 

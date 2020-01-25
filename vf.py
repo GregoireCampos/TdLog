@@ -29,15 +29,10 @@ from sklearn import datasets
 from sklearn.metrics import confusion_matrix 
 from sklearn.model_selection import train_test_split 
 import math
-
-"""
-mettre ça dans le bouton process & mettre tous les X et les Y en variables globales
-"""
-
-
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier 
 from sklearn.naive_bayes import GaussianNB 
+from sklearn.svm import SVC 
 
 
 class Window(QMainWindow):
@@ -53,6 +48,7 @@ class Window(QMainWindow):
         self.knn_method_triggered = 0
         self.dtree_method_triggered = 0
         self.bayes_method_triggered = 0
+        self.svm_method_triggered = 0
         self.btn_Quit = QPushButton("Quit", self)
         self.btn_Quit.clicked.connect(self.quitt)
         self.threshold = 0.5
@@ -91,6 +87,12 @@ class Window(QMainWindow):
         self.label_4 = QLabel(self)
         self.label_4.setText("Please process data and try decision tree \nmethod before checking the box")
         self.position()
+        """
+        self.btn_svm = QPushButton("svm method", self)
+        self.btn_svm.clicked.connect(self.svmmethod)
+        self.label_svm = QLabel(self)
+        self.label_svm.setText("")
+        """
         self.show()        
         
     def position(self):
@@ -124,7 +126,13 @@ class Window(QMainWindow):
         self.btn_4.adjustSize()
         self.label_6.move(120,620)
         self.label_5.adjustSize()
+        """
+        self.btn_svm.move(1550,350)
+        self.btn_svm.adjustSize()
+        self.label_svm.move(1550,620)
+        self.label_svm.adjustSize() """
         self.label_6.adjustSize()
+        
 
         
     def quitt(self):
@@ -212,7 +220,6 @@ class Window(QMainWindow):
         predictions = self.knn.predict_proba(X_knn)
         Games_you_need_to_bet_on = []
         number_of_bets = 0
-        margin = 0
         for i in range(len(predictions)) :
             # print("%s gagne avec proba %f, Match nul avec %f, et %s gagne avec proba %f" %(df_dict_origin["HomeTeam"][i],predictions[i][0],predictions[i][1], df_dict_origin["AwayTeam"][i],predictions[i][2])) 
             if (predictions[i][0] > self.threshold) :
@@ -239,9 +246,7 @@ class Window(QMainWindow):
         else :
             self.label_6.setText("Please process data, check the box and \ntry knn method")
             self.label_6.adjustSize()
-        
-        
-        
+            
     def bayes(self):
         if self.flag == 1:
             self.bayes_method_triggered = 1
@@ -471,6 +476,97 @@ class Window(QMainWindow):
         self.label_0.setText(file_name_total +"\n data successfully processed")
         self.label_0.adjustSize()
         self.flag = 1
+"""        
+    def svmmethod(self):
+        if self.flag == 1:
+            print("aa")
+            self.svm_method_triggered = 1
+            r = random.random()
+            random.shuffle(self.X, lambda:r)
+            random.shuffle(self.Y, lambda:r)
+            training_X = self.X[:int(len(self.X)-len(self.X)/5)]
+            testing_X = self.X[int(len(self.X)-len(self.X)/5):]       
+            training_Y = self.Y[:int(len(self.Y)-len(self.Y)/5)]
+            testing_Y = self.Y[int(len(self.Y)-len(self.Y)/5):] 
+            self.svm_model_linear = SVC(kernel = 'linear', C = 1, probability = True).fit(training_X, training_Y) 
+            svm_predictions = self.svm_model_linear.predict_proba(testing_X) 
+            accepted_games_svm = []
+            accepted_Y_svm = []
+            accepted_odd_svm =[]
+            sum_true_odd_svm = 0
+            number_of_won_games_svm = 0
+            for k in range (len(svm_predictions)) : 
+                for i in range(len(svm_predictions[k])) : 
+                    if svm_predictions[k][i]>self.threshold : 
+                        accepted_games_svm+=[i]            
+                        accepted_Y_svm+=[testing_Y[k]]
+                        accepted_odd_svm+=[testing_X[k][i]]
+                        if testing_Y[k] == i:
+                            sum_true_odd_svm += testing_X[k][i]
+                            number_of_won_games_svm += 1
+            cm_svm = confusion_matrix(accepted_Y_svm, accepted_games_svm)
+            true_class_svm = cm_svm[0][0]+cm_svm[1][1]+cm_svm[2][2]
+            correct_answers = true_class_svm/len(accepted_Y_svm)
+            correct_answers = round(correct_answers,4)
+            correct_answers = str(correct_answers)
+            average_bet = sum_true_odd_svm/number_of_won_games_svm
+            average_bet = round(average_bet,4)
+            average_bet = str(average_bet)
+            #cote moyenne des acceptés * proportion de victoire
+            average_gain = (true_class_svm/len(accepted_Y_svm))*(sum_true_odd_svm/(true_class_svm))*20-20
+            average_gain = round(average_gain,4)
+            average_gain = str(average_gain)
+            self.label_1.setText("SVM correct answers (%):"+correct_answers+" \nAverage won odd :"+average_bet+" \nWhat you got betting 20 £ :"+average_gain)
+            self.label_1.adjustSize()
+            if self.btn_svm.checkState()==2:
+                self.print_svm_next_games() 
+        else :
+            self.label_svm.setText("Please process the data before  starting analyse them ...")
+            self.label_svm.adjustSize()
+            
+    def print_svm_next_games(self):
+        df = pd.read_csv("Next_games.csv", sep=';')
+        dataset = {}
+        df_dict_origin = df.to_dict()
+        for key in self.keys_to_keep : 
+            dataset[key] = df_dict_origin[key]
+        dataset_df = pd.DataFrame.from_dict(dataset)
+        df_dict = dataset_df.T.to_dict()
+        X_svm =[]
+        X_svm+=[list(df_dict[i].values())[1:] for i in df_dict.keys()]
+        predictions = self.svm.predict_proba(X_svm)
+        Games_you_need_to_bet_on = []
+        number_of_bets = 0
+        margin = 0
+        for i in range(len(predictions)) :
+            # print("%s gagne avec proba %f, Match nul avec %f, et %s gagne avec proba %f" %(df_dict_origin["HomeTeam"][i],predictions[i][0],predictions[i][1], df_dict_origin["AwayTeam"][i],predictions[i][2])) 
+            if (predictions[i][0] > self.threshold) :
+                #print("proba calculée victoire dom = %f" %(predictions[i][0]))
+                #print("cote victoire dom = %f" %(df_dict_origin["B365H"][i]))
+                Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s" %(df_dict_origin["HomeTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
+                number_of_bets += 1
+            if (predictions[i][1] > self.threshold) :
+                #print("proba calculée match nul = %f" %(predictions[i][1]))
+                #print("cote match nul = %f" %(df_dict_origin["B365D"][i]))
+                Games_you_need_to_bet_on.append("\nParier sur match nul lors du match %s contre %s du %s"%(df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
+                number_of_bets += 1
+            if (predictions[i][2] > self.threshold) :
+                #print("proba calculée victoire ext = %f" %(predictions[i][2]))
+                #print("cote victoire ext = %f" %(df_dict_origin["B365A"][i]))
+                Games_you_need_to_bet_on.append("\nParier sur %s lors du match %s contre %s du %s"%(df_dict_origin["AwayTeam"][i],df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
+                number_of_bets += 1
+        self.label_svm.setText(' '.join(Games_you_need_to_bet_on))
+        self.label_svm.adjustSize()
+        
+    def svm_next_games(self):
+        if self.flag == 1 and self.btn_svm.checkState() == 2 :
+            self.print_svm_next_games()
+            
+         else :
+            self.label_svm.setText("Please process data, check the box and \ntry svm method")
+            self.label_svm.adjustSize()     """
+
+    
         
 
 def run():        
