@@ -48,12 +48,16 @@ class Window(QMainWindow):
         self.flag = 0
 
     def home(self):
+        self.knn_method_triggered = 0
+        self.dtree_method_triggered = 0
+        self.bayes_method_triggered = 0
         self.btn_Quit = QPushButton("Quit", self)
         self.btn_Quit.clicked.connect(self.quitt)
         self.threshold = 0.5
         self.btn_Thresh = QPushButton("Threshold value", self)
         self.btn_Thresh.clicked.connect(self.threshold_value)
         self.label_Thresh = QLineEdit(self)
+        self.label_Thresh.setText("0.5")
         self.btn_0 = QPushButton("Process data", self)
         self.btn_0.clicked.connect(self.processed_data)
         self.label_0 = QLabel(self)
@@ -123,11 +127,23 @@ class Window(QMainWindow):
     
     def threshold_value(self):
         self.threshold = float(self.label_Thresh.text())
-        
+        if self.flag == 1  and self.knn_method_triggered == 1 :
+            self.knnmethod()
+        if self.btn_4.checkState()==2 and self.flag == 1 :
+                self.print_knn_next_games() 
+        if self.flag == 1  and self.bayes_method_triggered == 1 :
+            self.bayes()
+        if self.btn_5.checkState() == 2 and self.flag == 1 :
+                self.print_bayes_next_games() 
+        if self.flag == 1  and self.dtree_method_triggered == 1 :
+            self.decision_tree()
+        if self.btn_6.checkState() == 2 and self.flag == 1 :
+                self.print_decision_tree_next_games()
     
     
     def knnmethod(self):
         if self.flag == 1:
+            self.knn_method_triggered = 1
             r = random.random()
             random.shuffle(self.X, lambda:r)
             random.shuffle(self.Y, lambda:r)
@@ -218,6 +234,7 @@ class Window(QMainWindow):
         
     def bayes(self):
         if self.flag == 1:
+            self.bayes_method_triggered = 1
             r = random.random()
             random.shuffle(self.X, lambda:r)
             random.shuffle(self.Y, lambda:r)
@@ -302,6 +319,7 @@ class Window(QMainWindow):
             
     def decision_tree(self):
         if self.flag == 1:
+            self.dtree_method_triggered = 1
             r = random.random()
             random.shuffle(self.X, lambda:r)
             random.shuffle(self.Y, lambda:r)
