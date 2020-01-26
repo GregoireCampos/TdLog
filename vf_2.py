@@ -167,7 +167,7 @@ class Window(QMainWindow):
             if self.flag == 1  and self.knn_method_triggered == 1 :
                 self.knnmethod()
             if self.btn_4.checkState()==2 and self.flag == 1 :
-                    self.print_knn_next_games() 
+                self.print_knn_next_games()
             if self.flag == 1  and self.bayes_method_triggered == 1 :
                 self.bayes()
             if self.btn_5.checkState() == 2 and self.flag == 1 :
@@ -176,6 +176,12 @@ class Window(QMainWindow):
                 self.decision_tree()
             if self.btn_6.checkState() == 2 and self.flag == 1 :
                     self.print_decision_tree_next_games()
+            if self.details_over_knn_triggered == 1 :
+                self.details_over_knn()
+            if self.details_over_bayes_triggered == 1 :
+                self.details_over_bayes()
+            if self.details_over_dtree_triggered == 1 :
+                self.details_over_dtree()
     
     
     def knnmethod(self):
@@ -481,9 +487,12 @@ class Window(QMainWindow):
             
     def draw(self):
         plt.figure(1)
+        plt.clf()
+        # cette ligne est commentable et cela permet de superposer les tracés
         plt.subplot(221)
         if self.details_over_dtree_triggered == 1:  
             l = len(self.X_bet_dtree)
+            print(self.X_bet_dtree)
             Y = [1]*(l)
             for i in range(1,l):
                 Y[i] = Y[i-1]+1               
@@ -512,7 +521,9 @@ class Window(QMainWindow):
             plt.title("KNN method")
             plt.ylabel("Current_cash")
             plt.xlabel("Time")
-        plt.show()
+        plt.draw()
+        # on peut également changer la ligne ci-dessus en plt.show() pour garder les couleurs mais on peut pas 
+        # actualiser à chaque appui sur threshold
 
 
             
