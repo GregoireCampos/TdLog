@@ -48,9 +48,11 @@ class Window(QMainWindow):
         self.flag = 0
         self.setAutoFillBackground(True)
         p = self.palette()
-        p.setColor(self.backgroundRole(), Qt.yellow)
+        p.setColor(self.backgroundRole(), Qt.lightGray)
         self.setPalette(p)
-        # mettre un bouton détail
+        self.details_over_dtree_triggered = 0
+        self.details_over_bayes_triggered = 0
+        self.details_over_knn_triggered = 0
         
     def home(self):
         self.knn_method_triggered = 0
@@ -274,17 +276,8 @@ class Window(QMainWindow):
         if self.flag == 1 and self.knn_method_triggered == 1:
             # tracer le gain en fonction de la date
             # fonction de gain
-            l = len(self.X_bet_knn)
-            Y = [1]*(l)
-            for i in range(1,l):
-                Y[i] = Y[i-1]+1               
-            plt.plot(Y, self.X_bet_knn)
-            plt.title("Evolution of you current cash using that instance of KNN method")
-            plt.ylabel("Current_cash")
-            plt.xlabel("Time")
-            plt.show()
-        
-                
+            self.details_over_knn_triggered = 1
+            self.draw()
             
     
     def bayes(self):
@@ -381,15 +374,9 @@ class Window(QMainWindow):
         if self.flag == 1 and self.bayes_method_triggered == 1:
             # tracer le gain en fonction de la date
             # fonction de gain
-            l = len(self.X_bet_bayes)
-            Y = [1]*(l)
-            for i in range(1,l):
-                Y[i] = Y[i-1]+1               
-            plt.plot(Y, self.X_bet_bayes)
-            plt.title("Evolution of you current cash using that instance of Bayes method")
-            plt.ylabel("Current_cash")
-            plt.xlabel("Time")
-            plt.show()
+            self.details_over_bayes_triggered = 1
+            self.draw()
+            
 
     def decision_tree(self):
         if self.flag == 1:
@@ -489,15 +476,44 @@ class Window(QMainWindow):
         if self.flag == 1 and self.dtree_method_triggered == 1:
             # tracer le gain en fonction de la date
             # fonction de gain
+            self.details_over_dtree_triggered = 1
+            self.draw()
+            
+    def draw(self):
+        plt.figure(1)
+        plt.subplot(221)
+        if self.details_over_dtree_triggered == 1:  
             l = len(self.X_bet_dtree)
             Y = [1]*(l)
             for i in range(1,l):
                 Y[i] = Y[i-1]+1               
+            plt.figure(1)
             plt.plot(Y, self.X_bet_dtree)
-            plt.title("Evolution of you current cash using that instance of Decision Tree method")
+            plt.title("Decision Tree method")
             plt.ylabel("Current_cash")
             plt.xlabel("Time")
-            plt.show()
+        plt.subplot(222)
+        if self.details_over_bayes_triggered == 1:  
+            l = len(self.X_bet_bayes)
+            Y = [1]*(l)
+            for i in range(1,l):
+                Y[i] = Y[i-1]+1               
+            plt.plot(Y, self.X_bet_bayes)
+            plt.title("Bayes method")
+            plt.ylabel("Current_cash")
+            plt.xlabel("Time")
+        plt.subplot (223)
+        if self.details_over_knn_triggered == 1:
+            l = len(self.X_bet_knn)
+            Y = [1]*(l)
+            for i in range(1,l):
+                Y[i] = Y[i-1]+1      
+            plt.plot(Y, self.X_bet_knn)
+            plt.title("KNN method")
+            plt.ylabel("Current_cash")
+            plt.xlabel("Time")
+        plt.show()
+
 
             
     def processed_data(self):
