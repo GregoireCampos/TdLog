@@ -10,8 +10,9 @@ import pandas as pd
 from dataprocess import *
 import random
 from PyQt5.QtWidgets import (QWidget, QLineEdit, QVBoxLayout, QGridLayout, QCheckBox, QPushButton, 
-                             QApplication, QLabel, QMainWindow, QMessageBox)
+                             QApplication, QLabel, QMainWindow, QMessageBox, QHBoxLayout)
 import sys
+import matplotlib.pyplot as plt
 from matplotlib.image import *
 from PyQt5 import QtGui
 from PyQt5 import QtCore
@@ -33,6 +34,8 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier 
 from sklearn.naive_bayes import GaussianNB 
 from sklearn.svm import SVC 
+from PyQt5.QtCore import Qt
+
 
 
 class Window(QMainWindow):
@@ -40,10 +43,15 @@ class Window(QMainWindow):
     def __init__(self):
         super(Window, self).__init__()
         self.setGeometry(50,50, 2000,1200)
-        self.setWindowTitle("TdLog : sport bets")
+        self.setWindowTitle("TdLog : betting sports")
         self.home()
         self.flag = 0
-
+        self.setAutoFillBackground(True)
+        p = self.palette()
+        p.setColor(self.backgroundRole(), Qt.yellow)
+        self.setPalette(p)
+        # mettre un bouton détail
+        
     def home(self):
         self.knn_method_triggered = 0
         self.dtree_method_triggered = 0
@@ -51,6 +59,10 @@ class Window(QMainWindow):
         self.svm_method_triggered = 0
         self.btn_Quit = QPushButton("Quit", self)
         self.btn_Quit.clicked.connect(self.quitt)
+        self.btn_svm = QPushButton("svm method", self)
+        self.btn_svm.clicked.connect(self.svmmethod)
+        self.label_svm = QLabel(self)
+        self.label_svm.setText("")
         self.threshold = 0.5
         self.btn_Thresh = QPushButton("Threshold value", self)
         self.btn_Thresh.clicked.connect(self.threshold_value)
@@ -66,6 +78,12 @@ class Window(QMainWindow):
         self.btn_1.clicked.connect(self.knnmethod)
         self.label_1 = QLabel(self)
         self.label_1.setText("")
+        self.details_knn = QPushButton("details..", self)
+        self.details_knn.clicked.connect(self.details_over_knn)
+        self.details_bayes = QPushButton("details..", self)
+        self.details_bayes.clicked.connect(self.details_over_bayes)
+        self.details_dtree = QPushButton("details..", self)
+        self.details_dtree.clicked.connect(self.details_over_dtree)
         self.btn_2 = QPushButton("Bayes", self)
         self.btn_2.clicked.connect(self.bayes)
         self.label_2 = QLabel(self)
@@ -87,12 +105,6 @@ class Window(QMainWindow):
         self.label_4 = QLabel(self)
         self.label_4.setText("Please process data and try decision tree \nmethod before checking the box")
         self.position()
-        """
-        self.btn_svm = QPushButton("svm method", self)
-        self.btn_svm.clicked.connect(self.svmmethod)
-        self.label_svm = QLabel(self)
-        self.label_svm.setText("")
-        """
         self.show()        
         
     def position(self):
@@ -108,12 +120,18 @@ class Window(QMainWindow):
         self.label_Thresh_text.adjustSize()
         self.btn_1.move(250,350)
         self.btn_1.adjustSize()
+        self.details_knn.move(120,470)
+        self.details_knn.adjustSize()
         self.label_1.move(250,400)
         self.btn_2.move(650,350)
         self.btn_2.adjustSize()
+        self.details_bayes.move(520,470)
+        self.details_bayes.adjustSize()
         self.label_2.move(650,400)
         self.btn_3.move(1000,350)
         self.btn_3.adjustSize()
+        self.details_dtree.move(870,470)
+        self.details_dtree.adjustSize()
         self.label_3.move(1000,400)
         self.btn_6.move(1350,600)
         self.btn_6.adjustSize()
@@ -126,11 +144,10 @@ class Window(QMainWindow):
         self.btn_4.adjustSize()
         self.label_6.move(120,620)
         self.label_5.adjustSize()
-        """
         self.btn_svm.move(1550,350)
         self.btn_svm.adjustSize()
         self.label_svm.move(1550,620)
-        self.label_svm.adjustSize() """
+        self.label_svm.adjustSize()
         self.label_6.adjustSize()
         
 
@@ -177,15 +194,21 @@ class Window(QMainWindow):
             accepted_odd_knn =[]
             sum_true_odd_knn = 0
             number_of_won_games_knn = 0
+            X_bet_knn = [20]
             for k in range (len(knn_predictions)) : 
                 for i in range(len(knn_predictions[k])) : 
                     if knn_predictions[k][i]>self.threshold : 
                         accepted_games_knn+=[i]
                         accepted_Y_knn+=[testing_Y[k]]
-                        accepted_odd_knn+=[testing_X[k][i]] 
+                        accepted_odd_knn+=[testing_X[k][i]]
+                        l = len(X_bet_knn)
                         if testing_Y[k] == i:
                             sum_true_odd_knn += testing_X[k][i]
                             number_of_won_games_knn += 1
+                            X_bet_knn.append(X_bet_knn[l-1]+20*((sum_true_odd_knn/number_of_won_games_knn) - 1))
+                        else :
+                            X_bet_knn.append(X_bet_knn[l-1]-20)
+            self.X_bet_knn = X_bet_knn
             cm_knn = confusion_matrix(accepted_Y_knn, accepted_games_knn) 
             true_class_knn = cm_knn[0][0]+cm_knn[1][1]+cm_knn[2][2]
             correct_answers = true_class_knn/len(accepted_Y_knn)
@@ -247,6 +270,23 @@ class Window(QMainWindow):
             self.label_6.setText("Please process data, check the box and \ntry knn method")
             self.label_6.adjustSize()
             
+    def details_over_knn(self):
+        if self.flag == 1 and self.knn_method_triggered == 1:
+            # tracer le gain en fonction de la date
+            # fonction de gain
+            l = len(self.X_bet_knn)
+            Y = [1]*(l)
+            for i in range(1,l):
+                Y[i] = Y[i-1]+1               
+            plt.plot(Y, self.X_bet_knn)
+            plt.title("Evolution of you current cash using that instance of KNN method")
+            plt.ylabel("Current_cash")
+            plt.xlabel("Time")
+            plt.show()
+        
+                
+            
+    
     def bayes(self):
         if self.flag == 1:
             self.bayes_method_triggered = 1
@@ -264,19 +304,21 @@ class Window(QMainWindow):
             accepted_odd_bayes =[]
             sum_true_odd_bayes = 0
             number_of_won_games_bayes = 0
+            self.X_bet_bayes = [20]
             for k in range (len(gnb_predictions)) : 
                 for i in range(len(gnb_predictions[k])) : 
                     if gnb_predictions[k][i]>self.threshold : #si la proba du joueur i de gagner le match k est au dessus du threshold
                         accepted_games_bayes+=[i]
                         accepted_Y_bayes+=[testing_Y[k]]
                         accepted_odd_bayes+=[testing_X[k][i]] 
+                        l = len(self.X_bet_bayes)
                         if testing_Y[k] == i:
                             sum_true_odd_bayes += testing_X[k][i]
                             number_of_won_games_bayes += 1
+                            self.X_bet_bayes.append(self.X_bet_bayes[l-1]+20*((sum_true_odd_bayes/number_of_won_games_bayes) - 1))
+                        else :
+                            self.X_bet_bayes.append(self.X_bet_bayes[l-1]-20)
             cm_bayes = confusion_matrix(accepted_Y_bayes, accepted_games_bayes) 
-            """
-            si on met un threshold trop haut ça plante parce que c'est out of bounds
-            """
             true_class_bayes = cm_bayes[0][0]+cm_bayes[1][1]+cm_bayes[2][2]
             correct_answers = true_class_bayes/len(accepted_Y_bayes)
             correct_answers = round(correct_answers,4)
@@ -331,10 +373,24 @@ class Window(QMainWindow):
         
     def bayes_next_games(self):
         if self.flag == 1 and self.btn_5.checkState() == 2 :
-            self.print_bayes_next_games()    
+            self.print_bayes_next_games()
         else :
             self.label_5.setText("Please process data, check the box and /ntry Bayes method")
             
+    def details_over_bayes(self):
+        if self.flag == 1 and self.bayes_method_triggered == 1:
+            # tracer le gain en fonction de la date
+            # fonction de gain
+            l = len(self.X_bet_bayes)
+            Y = [1]*(l)
+            for i in range(1,l):
+                Y[i] = Y[i-1]+1               
+            plt.plot(Y, self.X_bet_bayes)
+            plt.title("Evolution of you current cash using that instance of Bayes method")
+            plt.ylabel("Current_cash")
+            plt.xlabel("Time")
+            plt.show()
+
     def decision_tree(self):
         if self.flag == 1:
             self.dtree_method_triggered = 1
@@ -352,15 +408,21 @@ class Window(QMainWindow):
             accepted_Y_decision_tree = [] # résultat du match 0 1 ou 2
             sum_true_odd_decision_tree = 0 #somme des cotes des matchs gagnés
             number_of_won_games_decision_tree = 0
+            X_bet_dtree = [20]
             for k in range (len(dtree_predictions)) : 
                 for i in range(len(dtree_predictions[k])) : 
                     if dtree_predictions[k][i]>self.threshold :
                         accepted_games_decision_tree+=[i] #prédiction
                         accepted_Y_decision_tree+=[testing_Y[k]] #vrai résultat
                         accepted_odd_decision_tree+=[testing_X[k][i]]
+                        l = len(X_bet_dtree)       
                         if testing_Y[k] == i:
                             sum_true_odd_decision_tree += testing_X[k][i]
-                            number_of_won_games_decision_tree += 1
+                            number_of_won_games_decision_tree += 1                     
+                            X_bet_dtree.append(X_bet_dtree[l-1]+20*((sum_true_odd_decision_tree/number_of_won_games_decision_tree) - 1))
+                        else :
+                            X_bet_dtree.append(X_bet_dtree[l-1]-20) 
+            self.X_bet_dtree = X_bet_dtree
             #creating a confusion matrix 
             cm_decision_tree = confusion_matrix(accepted_Y_decision_tree, accepted_games_decision_tree) 
             true_class_decision_tree = cm_decision_tree[0][0]+cm_decision_tree[1][1]+cm_decision_tree[2][2]
@@ -423,6 +485,21 @@ class Window(QMainWindow):
         else :
             self.label_4.setText("Please process data, check the box and \ntry decision tree method")
             
+    def details_over_dtree(self):
+        if self.flag == 1 and self.dtree_method_triggered == 1:
+            # tracer le gain en fonction de la date
+            # fonction de gain
+            l = len(self.X_bet_dtree)
+            Y = [1]*(l)
+            for i in range(1,l):
+                Y[i] = Y[i-1]+1               
+            plt.plot(Y, self.X_bet_dtree)
+            plt.title("Evolution of you current cash using that instance of Decision Tree method")
+            plt.ylabel("Current_cash")
+            plt.xlabel("Time")
+            plt.show()
+
+            
     def processed_data(self):
         df =pd.read_csv('training_file.csv', sep=';')         
         self.threshold = 0.5
@@ -476,10 +553,9 @@ class Window(QMainWindow):
         self.label_0.setText(file_name_total +"\n data successfully processed")
         self.label_0.adjustSize()
         self.flag = 1
-"""        
+
     def svmmethod(self):
         if self.flag == 1:
-            print("aa")
             self.svm_method_triggered = 1
             r = random.random()
             random.shuffle(self.X, lambda:r)
@@ -562,9 +638,9 @@ class Window(QMainWindow):
         if self.flag == 1 and self.btn_svm.checkState() == 2 :
             self.print_svm_next_games()
             
-         else :
+        else :
             self.label_svm.setText("Please process data, check the box and \ntry svm method")
-            self.label_svm.adjustSize()     """
+            self.label_svm.adjustSize()
 
     
         

@@ -187,7 +187,7 @@ def add_data_ratio(dataset):
             dataset["RATIO"][i] = a * (dataset["HTGDBG"][i] - dataset["ATGDBG"][i]) + b * (dataset["HTPBG"][i] - dataset["ATPBG"][i])
     dataset_df = pd.DataFrame.from_dict(dataset)
     dataset_df.to_csv("F1_processed.csv")
-#add_data_ratio(dataset)
+# add_data_ratio(dataset)
 
 
 """Maintenant, on aimerait remplir la colonne "CC" (current cash) qui bouge quand on prend un pari, et la colonne GO qui affiche True
@@ -208,7 +208,8 @@ def add_data_cc(dataset):
             dataset["CC"][i] = previous_cc
     dataset_df = pd.DataFrame.from_dict(dataset)
     dataset_df.to_csv("F1_processed.csv")
-#add_data_cc(dataset)
+
+# add_data_cc(dataset)
 
 
 date = "22/12/2018"
