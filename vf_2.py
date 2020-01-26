@@ -497,7 +497,7 @@ class Window(QMainWindow):
             for i in range(1,l):
                 Y[i] = Y[i-1]+1               
             plt.figure(1)
-            plt.plot(Y, self.X_bet_dtree)
+            plt.plot(Y, self.X_bet_dtree, 'b')
             plt.title("Decision Tree method")
             plt.ylabel("Current_cash")
             plt.xlabel("Time")
@@ -507,7 +507,7 @@ class Window(QMainWindow):
             Y = [1]*(l)
             for i in range(1,l):
                 Y[i] = Y[i-1]+1               
-            plt.plot(Y, self.X_bet_bayes)
+            plt.plot(Y, self.X_bet_bayes, 'm')
             plt.title("Bayes method")
             plt.ylabel("Current_cash")
             plt.xlabel("Time")
@@ -517,7 +517,7 @@ class Window(QMainWindow):
             Y = [1]*(l)
             for i in range(1,l):
                 Y[i] = Y[i-1]+1      
-            plt.plot(Y, self.X_bet_knn)
+            plt.plot(Y, self.X_bet_knn, 'g')
             plt.title("KNN method")
             plt.ylabel("Current_cash")
             plt.xlabel("Time")
