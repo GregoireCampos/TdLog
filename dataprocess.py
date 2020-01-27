@@ -50,7 +50,9 @@ dataset_df.to_csv("F1_processed.csv")
 #Donc il faudra lancer la fonction sur la liste suivante pour avoir le tout
 
 list_teams= ["Marseille", "Toulouse","Monaco","Lille","Rennes","Nimes","Reims","Lyon","Caen","Guingamp","Strasbourg","Paris SG"
-             ,"Montpellier","Amiens","Dijon","Nantes","St Etienne","Angers","Nice","Bordeaux"]
+             ,"Montpellier","Amiens","Dijon","Nantes","St Etienne","Angers","Nice","Bordeaux","Lens", "Nancy", "Sochaux", "Valenciennes", "Metz"
+             ,"Lorient","Auxerre","Le Mans", "Le Havre", "Grenoble","Boulogne","Arles","Brest","Ajaccio","Evian Thonon Gaillard","Bastia", "Ajaccio GFCO"]
+print(len(list_teams))
 
 def add_data_goal_diff(dataset,team) :
     #Home team goal difference before and after the game = différence de buts de l'équipe à domicile avant et après le match
