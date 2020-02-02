@@ -14,24 +14,24 @@ def add_data_goal_diff(dataset,team,file_name) :
     last_game_index = None;
     for i in range (nb_games) :
         if dataset["HomeTeam"][i]!=team and dataset["AwayTeam"][i]!=team :
-            #le match ne concerne pas l'équipe en question
+            #the game is doesn't concern the team
             pass;
         else : 
-             #il faut prendre en compte ce match pour l'équipe team
-            if dataset["HomeTeam"][i]==team : #l'équipe qu'on regarde joue a domicile
-                if last_game_index == None: #l'équipe n'a encore jamais joué
+             #Need to take this game into account
+            if dataset["HomeTeam"][i]==team : #team plays home
+                if last_game_index == None: #team never played yet
                     dataset["HTGDBG"][i] = 0
                     dataset["HTGDAG"][i] = dataset["HTGDBG"][i] + dataset["FTHG"][i] - dataset["FTAG"][i] 
                 else :
-                    if dataset["HomeTeam"][last_game_index]==team : #Son dernier match était à domicile
+                    if dataset["HomeTeam"][last_game_index]==team : #last game was home
                         dataset["HTGDBG"][i] = dataset["HTGDAG"][last_game_index]
                         dataset["HTGDAG"][i] = dataset["HTGDAG"][last_game_index] + dataset["FTHG"][i] - dataset["FTAG"][i]
-                    else : #Son dernier match était à l'exterieur
+                    else : #last gamz was away
                         dataset["HTGDBG"][i] = dataset["ATGDAG"][last_game_index]
                         dataset["HTGDAG"][i] = dataset["ATGDAG"][last_game_index] + dataset["FTHG"][i] - dataset["FTAG"][i]
             else :
                 #dataset["awayTeam"]==team  
-                if last_game_index == None: #l'équipe n'a encore jamais joué
+                if last_game_index == None: #team never played yet
                     dataset["ATGDBG"][i] = 0
                     dataset["ATGDAG"][i] = dataset["ATGDBG"][i] - dataset["FTHG"][i] + dataset["FTAG"][i] 
                 else :
@@ -55,12 +55,12 @@ def add_data_points(dataset,team,file_name) :
     last_game_index = None;
     for i in range (nb_games) :
         if dataset["HomeTeam"][i]!=team and dataset["AwayTeam"][i]!=team :
-            #le match ne concerne pas l'équipe en question
+            #the game is not about this team
             pass;
         else : 
-             #il faut prendre en compte ce match pour l'équipe team
-            if dataset["HomeTeam"][i]==team : #Team joue a domicile
-                if last_game_index == None: #l'équipe n'a encore jamais joué
+             #we need to take this game into account
+            if dataset["HomeTeam"][i]==team : #Team plays home
+                if last_game_index == None: #Team never played yet
                     dataset["HTPBG"][i] = 0
                     if dataset["FTR"][i]=="H" : 
                         dataset["HTPAG"][i] = dataset["HTPBG"][i] + 3
@@ -69,7 +69,7 @@ def add_data_points(dataset,team,file_name) :
                     else :
                         dataset["HTPAG"][i] = dataset["HTPBG"][i]
                 else :
-                    if dataset["HomeTeam"][last_game_index]==team : #Son dernier match était à domicile
+                    if dataset["HomeTeam"][last_game_index]==team : #last game was home
                         dataset["HTPBG"][i] = dataset["HTPAG"][last_game_index]
                         if dataset["FTR"][i]=="H" : 
                             dataset["HTPAG"][i] = dataset["HTPBG"][i] + 3
@@ -77,7 +77,7 @@ def add_data_points(dataset,team,file_name) :
                             dataset["HTPAG"][i] = dataset["HTPBG"][i] + 1
                         else :
                             dataset["HTPAG"][i] = dataset["HTPBG"][i]
-                    else : #Son dernier match était à l'exterieur
+                    else : #last game was away
                         dataset["HTPBG"][i] = dataset["ATPAG"][last_game_index]
                         if dataset["FTR"][i]=="H" : 
                             dataset["HTPAG"][i] = dataset["HTPBG"][i] + 3
@@ -87,7 +87,7 @@ def add_data_points(dataset,team,file_name) :
                             dataset["HTPAG"][i] = dataset["HTPBG"][i]
             else :
                 #dataset["awayTeam"]==team  
-                if last_game_index == None: #l'équipe n'a encore jamais joué
+                if last_game_index == None: #team never played yet
                     dataset["ATPBG"][i] = 0
                     if dataset["FTR"][i]=="A" : 
                         dataset["ATPAG"][i] = dataset["ATPBG"][i] + 3
@@ -131,20 +131,20 @@ def process_files() :
         for key in keys_to_keep : 
             dataset[key] = df_dict[key]
     
-#Initializing evry new data
-#home team or Away team    goal average before and after the game 
+        #Initializing evry new data
+        #home team or Away team    goal average before and after the game 
         dataset["HTGDBG"]= {}
         dataset["HTGDAG"]= {}
         dataset["ATGDBG"]= {}
         dataset["ATGDAG"]= {}
-#points before and after the game
+        #points before and after the game
         dataset["HTPBG"]= {}
         dataset["HTPAG"]= {}
         dataset["ATPBG"]= {}
         dataset["ATPAG"]= {}
     
 
-#Add points and goal average, team by team 
+        #Add points and goal average, team by team 
 
         for team in list_teams : 
             add_data_points(dataset,team,file_name)

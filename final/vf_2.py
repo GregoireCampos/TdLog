@@ -7,7 +7,7 @@ Created on Tue Jan 21 22:05:04 2020
 import datetime
 import time
 import pandas as pd
-import dataprocess #our own modul9
+import dataprocess #our own module
 import random
 from PyQt5.QtWidgets import (QWidget, QLineEdit, QVBoxLayout, QGridLayout, QCheckBox, QPushButton, 
                              QApplication, QLabel, QMainWindow, QMessageBox, QHBoxLayout)
@@ -147,7 +147,6 @@ class Window(QMainWindow):
         
                 
     def processed_data(self):
-        #df =pd.read_csv('training_file.csv', sep=';') 
         dataprocess.process_files()        
         self.threshold = 0.5
         ## Creating a training files from seasons 07-08 to 18-19
