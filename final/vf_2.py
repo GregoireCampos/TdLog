@@ -2,7 +2,7 @@
 """
 Created on Tue Jan 21 22:05:04 2020
 
-@author: campo
+@author: gregoire and badr
 """
 import datetime
 import time
@@ -45,11 +45,13 @@ class Window(QMainWindow):
         self.details_over_knn_triggered = 0
         
     def home(self):
+        # we use the next button to recompute the overview in case we change threshold and we already had pushed
+        # the method buttons (knn, decision tree and bayes)
         self.knn_method_triggered = 0
         self.decision_tree_method_triggered = 0
         self.bayes_method_triggered = 0
-        self.svm_method_triggered = 0
         self.flag = 0
+        # labels are used to print the overview results under the method buttons
         self.label_1 = QLabel(self)
         self.label_1.setText("")
         self.label_2 = QLabel(self)
@@ -58,10 +60,8 @@ class Window(QMainWindow):
         self.label_3.setText("")
         self.btn_Quit = QPushButton("Quit", self)
         self.btn_Quit.clicked.connect(self.quitt)
-        self.btn_svm = QPushButton("svm method", self)
-        self.btn_svm.clicked.connect(self.svmmethod)
-        self.label_svm = QLabel(self)
-        self.label_svm.setText("")
+        # we can change the used threshold with the QLineEdit and then push threshold button to save that threshold
+        # value
         self.threshold = 0.5
         self.btn_Thresh = QPushButton("Threshold value", self)
         self.btn_Thresh.clicked.connect(self.threshold_value)
@@ -69,10 +69,12 @@ class Window(QMainWindow):
         self.label_Thresh.setText("0.5")
         self.label_Thresh_text = QLabel(self)
         self.label_Thresh_text.setText("")
+        # at the beginning of the process, the user has to process data (cf the other file)
         self.btn_0 = QPushButton("Process data", self)
         self.btn_0.clicked.connect(self.processed_data)
         self.label_0 = QLabel(self)
         self.label_0.setText("Please process data")        
+        # these are the method buttons
         self.btn_1 = QPushButton("KNN method", self)
         self.btn_1.clicked.connect(self.launch_knn)
         self.details_knn = QPushButton("details..", self)
@@ -85,6 +87,8 @@ class Window(QMainWindow):
         self.btn_2.clicked.connect(self.launch_bayes)
         self.btn_3 = QPushButton("Decision_tree", self)
         self.btn_3.clicked.connect(self.launch_decision_tree)
+        # these are the next games buttons, with labels to print the next game the user has to bet on 
+        # to follow the path of the relating method
         self.btn_6 = QCheckBox("Next games you will bet on according to Decision Tree", self)
         self.btn_6.clicked.connect(self.next_games)
         self.label_6 = QLabel(self)
@@ -101,6 +105,10 @@ class Window(QMainWindow):
         self.show()        
         
     def position(self):
+        # Here, we organize the user interface
+        # This interface fits to gregoire's screen, but not to badr screen. 
+        # If it not fits your screen, please let us know your screen dimension and we will fastly 
+        # edit this code to make it great.
         self.btn_Quit.move(1500,0)
         self.btn_0.move(0,10)
         self.btn_0.adjustSize()
@@ -137,10 +145,6 @@ class Window(QMainWindow):
         self.btn_4.adjustSize()
         self.label_6.move(120,620)
         self.label_5.adjustSize()
-        self.btn_svm.move(1550,350)
-        self.btn_svm.adjustSize()
-        self.label_svm.move(1550,620)
-        self.label_svm.adjustSize()
         self.label_6.adjustSize()
         
 
@@ -149,7 +153,7 @@ class Window(QMainWindow):
     def processed_data(self):
         dataprocess.process_files()        
         self.threshold = 0.5
-        ## Creating a training files from seasons 07-08 to 18-19
+        # Creating a training files from seasons 07-08 to 18-19
         self.keys_to_keep = ["FTR","B365H","B365D","B365A","HTGDBG","ATGDBG","HTPBG","ATPBG"]
         self.X =[]
         self.Y = []
@@ -213,27 +217,24 @@ class Window(QMainWindow):
             self.label_Thresh_text.adjustSize()
         else :
             self.threshold = float(self.label_Thresh.text())
-            if self.flag == 1  and self.knn_method_triggered == 1 :
-                self.launch_knn()
-            if self.btn_4.checkState()==2 and self.flag == 1 :
-                self.used_method = 2
-                self.print_next_games(self.used_method)
-            if self.flag == 1  and self.bayes_method_triggered == 1 :
-                self.launch_bayes()
-            if self.btn_5.checkState() == 2 and self.flag == 1 :
-                self.used_method = 1
-                self.print_next_games(self.used_method)
-            if self.flag == 1  and self.decision_tree_method_triggered == 1 :
-               self.launch_decision_tree()
-            if self.btn_6.checkState() == 2 and self.flag == 1 :
-                self.used_method = 0
-                self.print_next_games(self.used_method)
-            if self.details_over_knn_triggered == 1 :
-                self.details()
-            if self.details_over_bayes_triggered == 1 :
-                self.details()
-            if self.details_over_dtree_triggered == 1 :
-                self.details()
+            if self.flag == 1:
+                if self.knn_method_triggered == 1 :
+                    self.launch_knn()
+                if self.bayes_method_triggered == 1:
+                    self.launch_bayes()    
+                if self.decision_tree_method_triggered == 1 :
+                    self.launch_decision_tree()
+                
+                if self.btn_4.checkState()==2 :
+                    self.used_method = 2
+                    self.print_next_games(self.used_method)        
+                if self.btn_5.checkState() == 2:
+                    self.used_method = 1
+                    self.print_next_games(self.used_method)
+                if self.btn_6.checkState() :
+                    self.used_method = 0
+                    self.print_next_games(self.used_method)
+                self.details()    
     
     
     def launch_knn(self):
@@ -254,6 +255,7 @@ class Window(QMainWindow):
             r = random.random()
             random.shuffle(self.X, lambda:r)
             random.shuffle(self.Y, lambda:r)
+            # we train the model with 80% of data then test it with the remaining part 
             training_X = self.X[:int(len(self.X)-len(self.X)/5)]
             testing_X = self.X[int(len(self.X)-len(self.X)/5):]       
             training_Y = self.Y[:int(len(self.Y)-len(self.Y)/5)]
@@ -276,6 +278,7 @@ class Window(QMainWindow):
             accepted_odd =[]
             sum_true_odd = 0
             number_of_won_games = 0
+            # X_bet stands for the current cash over time
             X_bet = [20]
             for k in range (len(predictions)) : 
                 for i in range(len(predictions[k])) : 
@@ -297,6 +300,7 @@ class Window(QMainWindow):
             if self.method_number == 2:
                 self.X_bet_knn = X_bet
             cm = confusion_matrix(accepted_Y, accepted_games) 
+            # true class stands for the right answers
             true_class = cm[0][0]+cm[1][1]+cm[2][2]
             correct_answers = true_class/len(accepted_Y)
             correct_answers = round(correct_answers,4)
@@ -307,32 +311,35 @@ class Window(QMainWindow):
             average_gain = (true_class/len(accepted_Y))*(sum_true_odd/(true_class))*20-20
             average_gain = round(average_gain,4)
             average_gain = str(average_gain)
+            
             if self.method_number == 2:
+                # it prints an overview
                 self.label_1.setText("KNN correct answers (%):"+correct_answers+" \nAverage won odd :"+average_bet+" \nWhat you got betting 20 £ :"+average_gain)
                 self.label_1.adjustSize()
+                # if we checked the box it prints the next games
+                if self.btn_4.checkState() == 2:
+                    self.used_method = 2
+                    self.print_next_games(self.used_method)
+                # if we pushed knn details button it plots again the graph
+                if self.details_over_knn_triggered == 1:
+                    self.details()
             if self.method_number ==1:
                 self.label_2.setText("Bayes correct answers (%):"+correct_answers+" \nAverage won odd :"+average_bet+" \nWhat you got betting 20 £ :"+average_gain)
                 self.label_2.adjustSize()
+                if self.btn_5.checkState()==2:
+                    self.used_method = 1
+                    self.print_next_games(self.used_method)  
+                if self.details_over_bayes_triggered == 1:
+                    self.details()
             if self.method_number == 0:
                 self.label_3.setText("Decision tree correct answers (%):"+correct_answers+" \nAverage won odd :"+average_bet+" \nWhat you got betting 20 £ :"+average_gain)
                 self.label_3.adjustSize()
-            if self.method_number == 2 and self.btn_4.checkState()==2:
-                self.used_method = 2
-                self.print_next_games(self.used_method)
-                if self.details_over_knn_triggered == 1:
-                    self.details()
-            if self.method_number == 1 and self.btn_5.checkState()==2:
-                self.used_method = 1
-                self.print_next_games(self.used_method)  
-                if self.details_over_bayes_triggered == 1:
-                    self.details()
-            if self.method_number == 0 and self.btn_6.checkState()==2:
-                self.used_method = 0
-                self.print_next_games(self.used_method) 
+                if self.btn_6.checkState()==2:
+                    self.used_method = 0
+                    self.print_next_games(self.used_method) 
                 if self.details_over_dtree_triggered == 1:    
                     self.details()
                     
-            # you have to push "details" if you have pushed again a method, this is one of the problems 
         else :
             self.label_1.setText("""Please process the data before  
             starting analyse them ...""")
@@ -414,6 +421,7 @@ class Window(QMainWindow):
             self.draw()
 
     def draw(self):
+        # we plot the three graphs on the same window to compare them easily
         plt.figure(1)
         plt.clf()
         plt.subplot(221)
@@ -447,107 +455,7 @@ class Window(QMainWindow):
             plt.title("KNN method")
             plt.ylabel("Current_cash")
             plt.xlabel("Time")
-        plt.draw()
-
-    def svmmethod(self):
-        # check if he has processed data
-        if self.flag == 1:
-            self.svm_method_triggered = 1
-            # remix the data to train the model each time on different values set
-            r = random.random()
-            random.shuffle(self.X, lambda:r)
-            random.shuffle(self.Y, lambda:r)
-            training_X = self.X[:int(len(self.X)-len(self.X)/5)]
-            testing_X = self.X[int(len(self.X)-len(self.X)/5):]       
-            training_Y = self.Y[:int(len(self.Y)-len(self.Y)/5)]
-            testing_Y = self.Y[int(len(self.Y)-len(self.Y)/5):] 
-            # use of svm_linear model
-            self.svm_model_linear = SVC(kernel = 'linear', C = 1, probability = True).fit(training_X, training_Y) 
-            svm_predictions = self.svm_model_linear.predict_proba(testing_X) 
-            ### compute some data concerning the model to give an overview of it
-            # pool of games we bet on
-            accepted_games_svm = []
-            accepted_Y_svm = []
-            accepted_odd_svm =[]
-            sum_true_odd_svm = 0
-            number_of_won_games_svm = 0
-            for k in range (len(svm_predictions)) : 
-                for i in range(len(svm_predictions[k])) : 
-                    # if the probability we computed thanks to svm model is higher than the threshold, we bet
-                    if svm_predictions[k][i]>self.threshold : 
-                        accepted_games_svm+=[i]            
-                        accepted_Y_svm+=[testing_Y[k]]
-                        accepted_odd_svm+=[testing_X[k][i]]
-                        if testing_Y[k] == i:
-                            sum_true_odd_svm += testing_X[k][i]
-                            number_of_won_games_svm += 1
-            # building a confusion matrix
-            cm_svm = confusion_matrix(accepted_Y_svm, accepted_games_svm)
-            # pool of games we bet on successfully 
-            true_class_svm = cm_svm[0][0]+cm_svm[1][1]+cm_svm[2][2]
-            correct_answers = true_class_svm/len(accepted_Y_svm)
-            correct_answers = round(correct_answers,4)
-            correct_answers = str(correct_answers)
-            average_bet = sum_true_odd_svm/number_of_won_games_svm
-            average_bet = round(average_bet,4)
-            average_bet = str(average_bet)
-            average_gain = (true_class_svm/len(accepted_Y_svm))*(sum_true_odd_svm/(true_class_svm))*20-20
-            average_gain = round(average_gain,4)
-            average_gain = str(average_gain)
-            # it gives the overview of the model efficiency on a QLabel just under the QPushButton
-            self.label_1.setText("SVM correct answers (%):"+correct_answers+" \nAverage won odd :"+average_bet+" \nWhat you got betting 20 £ :"+average_gain)
-            self.label_1.adjustSize()
-            # if the QCheckBox is checked, it prints the next games and teams we have to bet on
-            if self.btn_svm.checkState()==2:
-                self.print_svm_next_games() 
-        # if data are not processed
-        else :
-            self.label_svm.setText("Please process the data before  starting analyse them ...")
-            self.label_svm.adjustSize()
-            
-    """
-    This function prints the next games the user need to bet on according to the method he has choosen
-    """
-    def print_svm_next_games(self):
-        df = pd.read_csv("Next_games.csv", sep=';')
-        dataset = {}
-        df_dict_origin = df.to_dict()
-        for key in self.keys_to_keep : 
-            dataset[key] = df_dict_origin[key]
-        dataset_df = pd.DataFrame.from_dict(dataset)
-        df_dict = dataset_df.T.to_dict()
-        X_svm =[]
-        X_svm+=[list(df_dict[i].values())[1:] for i in df_dict.keys()]
-        predictions = self.svm.predict_proba(X_svm)
-        Games_you_need_to_bet_on = []
-        for i in range(len(predictions)) :
-        # we browse predictions and print the team and the game if our prediction are good enough to bet on it
-            if (predictions[i][0] > self.threshold) :
-                # if probability of home team victory is higher than the threshold, we bet on home team
-                Games_you_need_to_bet_on.append("\nBet on %s during %s against %s on %s" %
-                                                (df_dict_origin["HomeTeam"][i],df_dict_origin["HomeTeam"][i],
-                                                 df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
-            if (predictions[i][1] > self.threshold) :
-                Games_you_need_to_bet_on.append("\nBet on a draw game during %s againt %s on %s"%
-                                                (df_dict_origin["HomeTeam"][i],df_dict_origin["AwayTeam"][i],
-                                                 df_dict_origin["Date"][i]))
-            if (predictions[i][2] > self.threshold) :
-                Games_you_need_to_bet_on.append("\nBet on %s during %s against %s on %s"%
-                                                (df_dict_origin["AwayTeam"][i],df_dict_origin["HomeTeam"][i],
-                                                 df_dict_origin["AwayTeam"][i],df_dict_origin["Date"][i]))
-        self.label_svm.setText(' '.join(Games_you_need_to_bet_on))
-        self.label_svm.adjustSize()
-        
-    def svm_next_games(self):
-        if self.flag == 1 and self.btn_svm.checkState() == 2 :
-            self.print_svm_next_games()
-            
-        else :
-            self.label_svm.setText("Please process data, check the box and \ntry svm method")
-            self.label_svm.adjustSize()
-
-    
-        
+        plt.draw()     
 
 def run():        
     app = QApplication(sys.argv)

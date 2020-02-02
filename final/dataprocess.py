@@ -50,7 +50,7 @@ def add_data_goal_diff(dataset,team,file_name) :
 #Same process to add the points 
     
 def add_data_points(dataset,team,file_name) :
-    #Home team goal difference before and after the game = différence de buts de l'équipe à domicile avant et après le match
+    #Home team goal difference before and after the game
     nb_games = len(dataset['Date'].keys())
     last_game_index = None;
     for i in range (nb_games) :
@@ -131,7 +131,7 @@ def process_files() :
         for key in keys_to_keep : 
             dataset[key] = df_dict[key]
     
-        #Initializing evry new data
+        #Initializing every new data
         #home team or Away team    goal average before and after the game 
         dataset["HTGDBG"]= {}
         dataset["HTGDAG"]= {}
