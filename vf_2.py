@@ -16,19 +16,9 @@ import matplotlib.pyplot as plt
 from matplotlib.image import *
 from PyQt5 import QtGui
 from PyQt5 import QtCore
-from sklearn.model_selection import train_test_split
 import pandas as pd
 import numpy as np
-from keras.models import Sequential
-from keras.layers import Dense, Activation, Flatten
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import f1_score
-from sklearn.metrics import accuracy_score
-from keras.callbacks import ModelCheckpoint
-from sklearn.metrics import accuracy_score
-from sklearn import datasets 
 from sklearn.metrics import confusion_matrix 
-from sklearn.model_selection import train_test_split 
 import math
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier 

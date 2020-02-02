@@ -138,12 +138,12 @@ print("-----------------")
 """
 
 #training a linear SVM classifier 
-#from sklearn.svm import SVC 
-#svm_model_linear = SVC(kernel = 'linear', C = 1, probability = True).fit(training_X, training_Y) 
-#svm_predictions = svm_model_linear.predict_proba(testing_X) 
+from sklearn.svm import SVC 
+svm_model_linear = SVC(kernel = 'poly', C = 1, probability = True).fit(training_X, training_Y) 
+svm_predictions = svm_model_linear.predict_proba(testing_X) 
 
-#accepted_games = []
-#accepted_Y = []
+accepted_games = []
+accepted_Y = []
 #accepted_odd =[]
 
 #for k in range (len(svm_predictions)) : 
